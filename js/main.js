@@ -15,13 +15,13 @@ function Node(pos) {
 }
 console.log(color)
 arr = [];
-let WIDTH = 1300;
-let HEIGHT = 700;
+let WIDTH = 1320;
+let HEIGHT = 720;
 let PROBWALL = 0;
 const canvas = document.getElementById('myCanvas');
 canvas.width = WIDTH;
 c = canvas.getContext("2d");
-const rectSize = 20;
+const rectSize = 30;
 let xSize = WIDTH / rectSize;
 let ySize = HEIGHT / rectSize;
 let start = [0, 0];
@@ -323,14 +323,35 @@ async function dfs() {
     }
 }
 let SNAKE_SPEED = 100;
-let INTERVAL = 100;
+let INTERVAL;
 document.getElementById('start').addEventListener('click', () => {
     INTERVAL = setInterval(() => {update()}, SNAKE_SPEED);
 });
-
+function Berry(){//COLOR = 3
+    this.location = [Math.floor(Math.random() * (xSize-1)), Math.floor(Math.random() * (ySize-1))];
+    this.drawBerry = function(){
+        drawSq(this.location[0], this.location[1], 3);
+    }
+    this.regenerate = function(){
+        
+        this.location = [Math.floor(Math.random() * (xSize-1)), Math.floor(Math.random() * (ySize-1))];
+        drawSq(this.location[0], this.location[1], 3);
+    }
+}
 function Snake(){
     this.body = [[0,0], [1,0], [2, 0], [3, 0], [4,0]];
-
+    this.checkIfDead = function(){
+        for(let i = 0; i < this.body.length; i ++){
+            for(let j = i+1; j < this.body.length; j ++){
+                if(this.body[i][0] == this.body[j][0] && this.body[i][1] == this.body[j][1]){
+                    clearInterval(INTERVAL);
+                    console.log("DEAD");
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
     this.renderSnake = function(){
         render();
         for(let i = 0; i < this.body.length; i ++){
@@ -339,9 +360,12 @@ function Snake(){
         }
         render();
     }
-    this.updateUsingDirection = function(direction){
-        a = this.body.shift();
-        drawSq(a[0], a[1], 6);
+    this.updateUsingDirection = function(direction, bool){
+        if(bool){
+            let a = this.body.shift();
+            drawSq(a[0], a[1], 6);
+        }
+        
         console.log(direction);
         let newElement = [...this.body[this.body.length-1]];
         switch(direction){
@@ -349,7 +373,7 @@ function Snake(){
                 newElement[0] --;
                 if(newElement[0] < 0){
                     clearInterval(INTERVAL);
-                    return;
+
                 }
                 console.log(newElement);
                 this.body.push(newElement);
@@ -358,7 +382,7 @@ function Snake(){
                 newElement[0] ++;
                 if(newElement[0] > xSize-1){
                     clearInterval(INTERVAL);
-                    return;
+
                 }
                 console.log(newElement);
                 this.body.push(newElement);
@@ -367,7 +391,7 @@ function Snake(){
                 newElement[1] --;
                 if(newElement[1] < 0){
                     clearInterval(INTERVAL);
-                    return;
+
                 }
                 console.log(newElement);
                 this.body.push(newElement);
@@ -376,7 +400,7 @@ function Snake(){
                 newElement[1] ++;
                 if(newElement[1] > ySize-1){
                     clearInterval(INTERVAL);
-                    return;
+
                 }
                 console.log(newElement);
                 this.body.push(newElement);
@@ -387,9 +411,18 @@ function Snake(){
     }
 }
 let snake = new Snake();
-
+let berry = new Berry();
+let EATEN_BERRY = true;
+berry.drawBerry();
 snake.renderSnake();
-
+function checkIfBerryGone(){
+    if(snake.body[snake.body.length-1][0] == berry.location[0] && snake.body[snake.body.length-1][1] == berry.location[1]){
+        console.log("EATEN!");
+        berry.regenerate();
+        berry.drawBerry();
+        EATEN_BERRY = false;
+    }
+}
 const Direction = {
     NONE: 0,
     LEFT: 1,
@@ -397,17 +430,44 @@ const Direction = {
     UP: 3,
     DOWN: 4
 }
+
 let prevDirection = Direction.RIGHT;
 let currDirection = Direction.RIGHT;
+document.addEventListener('keypress', (e) => {
+
+    if(e.key == 'w'){
+        if(prevDirection != Direction.DOWN){
+            currDirection = Direction.UP;
+        }
+    }
+    if(e.key == 'a'){
+        if(prevDirection != Direction.RIGHT){
+            currDirection = Direction.LEFT;
+        }
+    }
+    if(e.key == 's'){
+        if(prevDirection != Direction.UP){
+            currDirection = Direction.DOWN;
+        }
+    }
+    if(e.key == 'd'){
+        if(prevDirection != Direction.LEFT){
+            currDirection = Direction.RIGHT;
+        }
+    }
+});
 function update(){
     if(currDirection == Direction.NONE){
-        snake.updateUsingDirection(prevDirection);
+        snake.updateUsingDirection(prevDirection, EATEN_BERRY);
     }
     else{
-        snake.updateUsingDirection(currDirection);
+        snake.updateUsingDirection(currDirection, EATEN_BERRY);
         prevDirection = currDirection;
         currDirection = Direction.NONE;
     }
+    EATEN_BERRY = true;
+    checkIfBerryGone();
+    snake.checkIfDead();
     
 }
 
