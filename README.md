@@ -1,1 +1,1 @@
-# GraphSearchVisualizer
+# SnakeGame
