@@ -16,7 +16,7 @@ function Node(pos) {
 console.log(color)
 arr = [];
 let WIDTH = 1320;
-let HEIGHT = 720;
+let HEIGHT = 660;
 let PROBWALL = 0;
 const canvas = document.getElementById('myCanvas');
 canvas.width = WIDTH;
@@ -451,6 +451,29 @@ document.addEventListener('keypress', (e) => {
         }
     }
     if(e.key == 'd'){
+        if(prevDirection != Direction.LEFT){
+            currDirection = Direction.RIGHT;
+        }
+    }
+});
+document.addEventListener('keydown', (e) => {
+
+    if(e.keyCode == 38){
+        if(prevDirection != Direction.DOWN){
+            currDirection = Direction.UP;
+        }
+    }
+    if(e.keyCode == 37){
+        if(prevDirection != Direction.RIGHT){
+            currDirection = Direction.LEFT;
+        }
+    }
+    if(e.keyCode == 40){
+        if(prevDirection != Direction.UP){
+            currDirection = Direction.DOWN;
+        }
+    }
+    if(e.keyCode == 39){
         if(prevDirection != Direction.LEFT){
             currDirection = Direction.RIGHT;
         }
