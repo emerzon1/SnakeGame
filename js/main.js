@@ -322,7 +322,18 @@ async function dfs() {
         }
     }
 }
-let SNAKE_SPEED = 100;
+let PERSON;
+let HIGHSCORE;
+const starter = {
+    name: 'Evan Merzon',
+    score: '5'
+}
+
+let SCORE = 5;
+let SNAKE_SPEED = parseInt(document.getElementById('speed').value);
+document.getElementById('speed').addEventListener('change', (e) => {
+    SNAKE_SPEED = parseInt(e.srcElement.val);
+});
 let INTERVAL;
 let started = false;
 document.getElementById('start').addEventListener('click', () => {
@@ -335,12 +346,38 @@ function Berry(){//COLOR = 3
         drawSq(this.location[0], this.location[1], 3);
     }
     this.regenerate = function(){
-        
+        SCORE++;
         this.location = [Math.floor(Math.random() * (xSize-1)), Math.floor(Math.random() * (ySize-1))];
         drawSq(this.location[0], this.location[1], 3);
     }
 }
+var getFromLocalStorage = () => {
+    if(!window.localStorage.getItem('user')){
+        window.localStorage.setItem('user', JSON.stringify(starter));
+    }
+    let item = JSON.parse(window.localStorage.getItem('user'));
+    document.getElementById('highscore').textContent = "The highscore is " + item['score'] + ", made by " + item['name'];
+}
+var setInLocalStorage = () => {
+    if(window.localStorage.getItem('user')){
+        score = JSON.parse(window.localStorage.getItem('user'))
+        if(SCORE > score['score']){
+            window.localStorage.removeItem('user');
+            window.localStorage.setItem('user', JSON.stringify({name: document.getElementById('name').value, score:SCORE}));
+            document.getElementById('highscore').textContent = "The highscore is " + SCORE + ", made by " + document.getElementById('name').value;
+
+        }
+        else{
+            getFromLocalStorage();
+        }
+        //window.localStorage.removeItem('user')
+    }
+}
+
+getFromLocalStorage();
+
 var renderLose = () => {
+    setInLocalStorage();
     c.beginPath();
     c.fillStyle = "white";
     c.rect(0, 0, xSize, ySize);
@@ -358,6 +395,7 @@ function Snake(){
                 if(this.body[i][0] == this.body[j][0] && this.body[i][1] == this.body[j][1]){
                     clearInterval(INTERVAL);
                     renderLose();
+                    
                     console.log("DEAD");
                     return false;
                 }
@@ -423,6 +461,9 @@ function Snake(){
         this.renderSnake();
     }
 }
+
+
+
 let snake = new Snake();
 let berry = new Berry();
 let EATEN_BERRY = true;
@@ -432,6 +473,7 @@ function checkIfBerryGone(){
     if(snake.body[snake.body.length-1][0] == berry.location[0] && snake.body[snake.body.length-1][1] == berry.location[1]){
         console.log("EATEN!");
         berry.regenerate();
+        document.getElementById('score').textContent = SCORE;
         berry.drawBerry();
         EATEN_BERRY = false;
     }
@@ -447,10 +489,10 @@ const Direction = {
 let prevDirection = Direction.RIGHT;
 let currDirection = Direction.RIGHT;
 document.addEventListener('keypress', (e) => {
-    if(e.key == 'w' || e.key == 'a' || e.key == 's' || e.key == 'd' && !started){
+    /*if(e.key == 'w' || e.key == 'a' || e.key == 's' || e.key == 'd' && !started){
         started = true;
         INTERVAL = setInterval(() => {update()}, SNAKE_SPEED);
-    }
+    }*/
     if(e.key == 'w' && started){
         if(prevDirection != Direction.DOWN){
             currDirection = Direction.UP;

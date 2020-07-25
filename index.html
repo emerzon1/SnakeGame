@@ -5,14 +5,29 @@
         <title></title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="css/style.css">
+        <style>
+            canvas{
+                border:1px solid black;
+            }
+        </style>
     </head>
     <body>
         <h1>Use WASD or arrow keys to move the snake</h1>
+
+        <p>Your length is: <span id='score'>5</span>.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="highscore"></span></p>
+        
         <canvas id="myCanvas"></canvas>
-        <p id='par'></p>
+        <p></p>
         <button id='reset'>Reset</button>
         <button id='start'>Start</button>
+        <input type='text'id='name' placeholder='Your Name'></input>
+        <select name="Speed" id="speed">
+            <option value="210">Very Slow</option>
+            <option value="170">Slow</option>
+            <option value="130" selected>Medium</option>
+            <option value="90">Fast</option>
+            <option value="50">Very Fast</option>
+        </select>
         <script type="text/javascript" src="heap.js"></script>
         <script src="js/main.js"></script>
     </body>
