@@ -15,8 +15,8 @@ function Node(pos) {
 }
 console.log(color)
 arr = [];
-let WIDTH = 1320;
-let HEIGHT = 660;
+let WIDTH = Math.max(Math.floor(window.innerWidth/30)*30 - 60, 750);
+let HEIGHT = Math.max(Math.floor(window.innerHeight/30)*30 - 180, 300);
 let PROBWALL = 0;
 const canvas = document.getElementById('myCanvas');
 canvas.width = WIDTH;
@@ -324,7 +324,9 @@ async function dfs() {
 }
 let SNAKE_SPEED = 100;
 let INTERVAL;
+let started = false;
 document.getElementById('start').addEventListener('click', () => {
+    started = true;
     INTERVAL = setInterval(() => {update()}, SNAKE_SPEED);
 });
 function Berry(){//COLOR = 3
@@ -338,6 +340,16 @@ function Berry(){//COLOR = 3
         drawSq(this.location[0], this.location[1], 3);
     }
 }
+var renderLose = () => {
+    c.beginPath();
+    c.fillStyle = "white";
+    c.rect(0, 0, xSize, ySize);
+    c.fill();
+    c.fillStyle = "red";
+    c.font = "150px Comic Sans MS";
+    c.textAlign = "center";
+    c.fillText("You Lose!", canvas.width/2, canvas.height/2); 
+}
 function Snake(){
     this.body = [[0,0], [1,0], [2, 0], [3, 0], [4,0]];
     this.checkIfDead = function(){
@@ -345,6 +357,7 @@ function Snake(){
             for(let j = i+1; j < this.body.length; j ++){
                 if(this.body[i][0] == this.body[j][0] && this.body[i][1] == this.body[j][1]){
                     clearInterval(INTERVAL);
+                    renderLose();
                     console.log("DEAD");
                     return false;
                 }
@@ -373,7 +386,7 @@ function Snake(){
                 newElement[0] --;
                 if(newElement[0] < 0){
                     clearInterval(INTERVAL);
-
+                    renderLose();
                 }
                 console.log(newElement);
                 this.body.push(newElement);
@@ -382,7 +395,7 @@ function Snake(){
                 newElement[0] ++;
                 if(newElement[0] > xSize-1){
                     clearInterval(INTERVAL);
-
+                    renderLose();
                 }
                 console.log(newElement);
                 this.body.push(newElement);
@@ -391,7 +404,7 @@ function Snake(){
                 newElement[1] --;
                 if(newElement[1] < 0){
                     clearInterval(INTERVAL);
-
+                    renderLose();
                 }
                 console.log(newElement);
                 this.body.push(newElement);
@@ -400,7 +413,7 @@ function Snake(){
                 newElement[1] ++;
                 if(newElement[1] > ySize-1){
                     clearInterval(INTERVAL);
-
+                    renderLose();
                 }
                 console.log(newElement);
                 this.body.push(newElement);
@@ -434,46 +447,52 @@ const Direction = {
 let prevDirection = Direction.RIGHT;
 let currDirection = Direction.RIGHT;
 document.addEventListener('keypress', (e) => {
-
-    if(e.key == 'w'){
+    if(e.key == 'w' || e.key == 'a' || e.key == 's' || e.key == 'd' && !started){
+        started = true;
+        INTERVAL = setInterval(() => {update()}, SNAKE_SPEED);
+    }
+    if(e.key == 'w' && started){
         if(prevDirection != Direction.DOWN){
             currDirection = Direction.UP;
         }
     }
-    if(e.key == 'a'){
+    if(e.key == 'a' && started){
         if(prevDirection != Direction.RIGHT){
             currDirection = Direction.LEFT;
         }
     }
-    if(e.key == 's'){
+    if(e.key == 's' && started){
         if(prevDirection != Direction.UP){
             currDirection = Direction.DOWN;
         }
     }
-    if(e.key == 'd'){
+    if(e.key == 'd' && started){
         if(prevDirection != Direction.LEFT){
             currDirection = Direction.RIGHT;
         }
     }
 });
 document.addEventListener('keydown', (e) => {
-
-    if(e.keyCode == 38){
+    if(e.keyCode>=38&&e.keyCode<=40 && !started){
+        started = true;
+        INTERVAL = setInterval(() => {update()}, SNAKE_SPEED);
+    }
+    if(e.keyCode == 38 && started){
         if(prevDirection != Direction.DOWN){
             currDirection = Direction.UP;
         }
     }
-    if(e.keyCode == 37){
+    if(e.keyCode == 37 && started){
         if(prevDirection != Direction.RIGHT){
             currDirection = Direction.LEFT;
         }
     }
-    if(e.keyCode == 40){
+    if(e.keyCode == 40 && started){
         if(prevDirection != Direction.UP){
             currDirection = Direction.DOWN;
         }
     }
-    if(e.keyCode == 39){
+    if(e.keyCode == 39 && started){
         if(prevDirection != Direction.LEFT){
             currDirection = Direction.RIGHT;
         }
