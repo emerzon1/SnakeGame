@@ -1,22 +1,13 @@
-const color = ['white', 'black', 'red', 'green', 'CornflowerBlue', 'yellow', 'white']
+const color = ['white', 'red', 'red', 'green', 'CornflowerBlue', 'yellow', 'white']
 /* TODO ==> 
-    CHECK IF POSSIBLE SQUARES USING ASTAR RETURN, if not restart;
-    Click and drag start and end points
-    Let user choose PROBWALL
-
+   USE MongoDB to store scores
 */
-function Node(pos) {
-    this.position = pos;
-    this.f = 0;
-    this.g = 0;
-    this.closed = false;
-    this.parent = null;
-    this.open = false;
-}
+
 console.log(color)
 arr = [];
-let WIDTH = Math.max(Math.floor(window.innerWidth/30)*30 - 60, 750);
-let HEIGHT = Math.max(Math.floor(window.innerHeight/30)*30 - 180, 300);
+let TAKEINPUT = true;
+let WIDTH = Math.max(Math.floor(window.innerWidth / 30) * 30 - 60, 750);
+let HEIGHT = Math.max(Math.floor(window.innerHeight / 30) * 30 - 180, 300);
 let PROBWALL = 0;
 const canvas = document.getElementById('myCanvas');
 canvas.width = WIDTH;
@@ -98,27 +89,13 @@ let grid = createGrid();
 document.getElementById('reset').addEventListener('click', () => {
     location.reload();
 })
-function delay() {
+function delay(a) {
     return new Promise(resolve => {
-        setTimeout(() => { resolve(); }, SPEED);
+        setTimeout(() => { resolve(); }, a);
     });
 
 }
-var getAdjValues = (i, j) => { // * * *
-    // * - *
-    // * * *
-    let res = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]];
-    let actualRes = [];
-    for (let i = 0; i < res.length; i++) {
-        if ((res[i][0] >= 0 && res[i][0] < xSize) && (res[i][1] >= 0 && res[i][1] < ySize)) {
-            if (arr[res[i][0]][res[i][1]] != 1) {
-                actualRes.push(res[i])
-            }
-        }
-    }
 
-    return actualRes;
-}
 var getAdjValuesAS = (i, j) => { // * * *
     // * - *
     // * * *
@@ -168,7 +145,7 @@ async function astar() {
             }
             return;
         }
-        let neighbors = getAdjValuesAS(q.position[0], q.position[1]);
+        let neighbors = getAdjValues(q.position[0], q.position[1]);
         for (let i = 0; i < neighbors.length; i++) {
             var cNode = nodeAt(neighbors[i]);
             if (cNode.closed) {
@@ -197,7 +174,289 @@ async function astar() {
 function nodeAt(val) {
     return grid[val[0]][val[1]];
 }
+
+let PERSON;
+let HIGHSCORE;
+const starter = {
+    name: 'Evan Merzon',
+    score: '5'
+}
+
+let SCORE = 5;
+let SNAKE_SPEED = parseInt(document.getElementById('speed').value);
+document.getElementById('speed').addEventListener('change', (e) => {
+    SNAKE_SPEED = parseInt(document.getElementById('speed').value);
+});
+let INTERVAL;
+let started = false;
+document.getElementById('start').addEventListener('click', () => {
+    started = true;
+    INTERVAL = setInterval(() => { update() }, SNAKE_SPEED);
+});
+var getFromLocalStorage = () => {
+    if (!window.localStorage.getItem('user')) {
+        window.localStorage.setItem('user', JSON.stringify(starter));
+    }
+    let item = JSON.parse(window.localStorage.getItem('user'));
+    document.getElementById('highscore').textContent = "The highscore is " + item['score'] + ", made by " + item['name'];
+}
+var setInLocalStorage = () => {
+    if (window.localStorage.getItem('user')) {
+        score = JSON.parse(window.localStorage.getItem('user'))
+        if (SCORE > score['score']) {
+            window.localStorage.removeItem('user');
+            window.localStorage.setItem('user', JSON.stringify({ name: document.getElementById('name').value, score: SCORE }));
+            document.getElementById('highscore').textContent = "The highscore is " + SCORE + ", made by " + document.getElementById('name').value;
+
+        }
+        else {
+            getFromLocalStorage();
+        }
+        //window.localStorage.removeItem('user')
+    }
+}
+
+getFromLocalStorage();
+
+var renderLose = () => {
+    setInLocalStorage();
+    c.beginPath();
+    c.fillStyle = "white";
+    c.rect(0, 0, xSize, ySize);
+    c.fill();
+    c.fillStyle = "red";
+    c.font = "150px Comic Sans MS";
+    c.textAlign = "center";
+    c.fillText("You Lose!", canvas.width / 2, canvas.height / 2);
+}
+
+
+
+
+let snake = new Snake(INTERVAL);
+let berry = new Berry();
+function inSnake(location) {
+    for (let i = 0; i < snake.body.length; i++) {
+        if (snake.body[i][0] == location[0] && snake.body[i][1] == location[1]) {
+            return true;
+        }
+    }
+    return false;
+}
+let EATEN_BERRY = true;
+berry.drawBerry();
+snake.renderSnake();
+function checkIfBerryGone() {
+    if (snake.body[snake.body.length - 1][0] == berry.location[0] && snake.body[snake.body.length - 1][1] == berry.location[1]) {
+        console.log("EATEN!");
+        berry.regenerate();
+        document.getElementById('score').textContent = SCORE;
+        berry.drawBerry();
+        EATEN_BERRY = false;
+    }
+}
+
+
+let prevDirection = Direction.RIGHT;
+let currDirection = Direction.RIGHT;
+document.addEventListener('keypress', (e) => {
+    if (TAKEINPUT) {
+        BEGIN = false;
+        /*if(e.key == 'w' || e.key == 'a' || e.key == 's' || e.key == 'd' && !started){
+            started = true;
+            INTERVAL = setInterval(() => {update()}, SNAKE_SPEED);
+        }*/
+        if (e.key == 'w' && started) {
+            if (prevDirection != Direction.DOWN) {
+                currDirection = Direction.UP;
+            }
+        }
+        if (e.key == 'a' && started) {
+            if (prevDirection != Direction.RIGHT) {
+                currDirection = Direction.LEFT;
+            }
+        }
+        if (e.key == 's' && started) {
+            if (prevDirection != Direction.UP) {
+                currDirection = Direction.DOWN;
+            }
+        }
+        if (e.key == 'd' && started) {
+            if (prevDirection != Direction.LEFT) {
+                currDirection = Direction.RIGHT;
+            }
+        }
+    }
+});
+document.addEventListener('keydown', (e) => {
+    if (TAKEINPUT) {
+        BEGIN = false;
+        if (e.keyCode >= 38 && e.keyCode <= 40 && !started) {
+            started = true;
+            INTERVAL = setInterval(() => { update() }, SNAKE_SPEED);
+        }
+        if (e.keyCode == 38 && started) {
+            if (prevDirection != Direction.DOWN) {
+                currDirection = Direction.UP;
+            }
+        }
+        if (e.keyCode == 37 && started) {
+            if (prevDirection != Direction.RIGHT) {
+                currDirection = Direction.LEFT;
+            }
+        }
+        if (e.keyCode == 40 && started) {
+            if (prevDirection != Direction.UP) {
+                currDirection = Direction.DOWN;
+            }
+        }
+        if (e.keyCode == 39 && started) {
+            if (prevDirection != Direction.LEFT) {
+                currDirection = Direction.RIGHT;
+            }
+        }
+    }
+});
+function getAdjValues(i, j) { // * * *
+    // * - *
+    // * * *
+    let res = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]];
+    let actualRes = [];
+    for (let i = 0; i < res.length; i++) {
+        if ((res[i][0] >= 0 && res[i][0] < xSize) && (res[i][1] >= 0 && res[i][1] < ySize)) {
+            if (arr[res[i][0]][res[i][1]] != 1) {
+                var push = true;
+                for(let j = 0; j < snake.body.length; j ++){
+                    if(snake.body[j][0] == res[i][0] && snake.body[j][1] == res[i][1]){
+                        push = false;
+                    }
+                }
+                if(push){
+                    actualRes.push(res[i]);
+                } 
+            }
+        }
+    }
+
+    return actualRes;
+}
+var getAdjValuesDIR = (i, j, dir) => { // * * *
+    // * - *
+    // * * *
+    let res = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]];
+    if (dir == Direction.RIGHT) {
+        res.splice(3, 1);
+    }
+    if (dir == Direction.LEFT) {
+        res.splice(1, 1)
+    }
+    if (dir == Direction.UP) {
+        res.splice(2, 1)
+    }
+    if (dir == Direction.DOWN) {
+        res.splice(0, 1);
+    }
+    let actualRes = [];
+    for (let i = 0; i < res.length; i++) {
+        if ((res[i][0] >= 0 && res[i][0] < xSize) && (res[i][1] >= 0 && res[i][1] < ySize)) {
+            //if (arr[res[i][0]][res[i][1]] != 1) {
+                actualRes.push(res[i])
+            //}
+        }
+    }
+
+    return actualRes;
+}
+var findDirection = (a, b) => {
+    if (a.position[0] > b.position[0]) {
+        return Direction.RIGHT;
+    }
+    if (a.position[0] < b.position[0]) {
+        return Direction.LEFT;
+    }
+    if (a.position[1] > b.position[1]) {
+        return Direction.DOWN;
+    }
+    return Direction.UP;
+}
+let currAlgo = -1;
+const searchAlgo  = {
+    NONE: -1,
+    ASTAR: 0,
+    DFS: 1,
+    BFS: 2
+}
+let PATH = [];
+async function dfs() {
+    currAlgo = searchAlgo.DFS;
+    grid = createGrid();
+    visited = [];
+    for (let i = 0; i < xSize; i++) {
+        temp = [];
+        for (let j = 0; j < ySize; j++) {
+            temp.push(false);
+        }
+        visited.push(temp);
+    }
+    stack = [];
+    stack.push(nodeAt(snake.body[snake.body.length - 1]));
+    let first = true;
+    while (stack.length > 0) {
+        val = stack.pop();
+        val.closed = true;
+        //console.log(currInd);
+        
+        if (arr[val.position[0]][val.position[1]] != 1) {
+            if (visited[val.position[0]][val.position[1]] == false) {
+                if (val.position[0] == berry.location[0] && val.position[1] == berry.location[1]) {
+                    //console.log(nodeAt(berry.location));
+                    let curr = nodeAt(val.position);
+                    while (curr.parent != null) {
+                        //drawSq(curr.position[0], curr.position[1], 5);
+                        PATH.push(findDirection(curr, curr.parent));
+                        curr = curr.parent;
+                    }
+                    
+                    return;
+                }
+                //if (val.position[0] != 0 || val.position[1] != 0) {
+                //drawSq(val.position[0], val.position[1], 4)
+                //}
+                //console.log(val);
+                //await delay(SNAKE_SPEED);
+
+                visited[val.position[0]][val.position[1]] = true;
+                if (first) {
+                    first = false;
+                    tmp = getAdjValuesDIR(val.position[0], val.position[1], prevDirection);
+                }
+                else {
+                    tmp = getAdjValues(val.position[0], val.position[1]);
+                }
+                for (let i = 0; i < tmp.length; i++) {
+
+                    if (stack.length <= 10000) {
+                        if (arr[tmp[i][0]][tmp[i][1]] != 1) {
+                            var currNode = nodeAt(tmp[i]);
+                            if (currNode.closed) {
+                                let a_ = 0;
+                            }
+                            else {
+                                currNode.parent = nodeAt(val.position);
+                                currNode.open = true;
+                                stack.push(nodeAt(tmp[i]));
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+}
 async function bfs() {
+    currAlgo = searchAlgo.BFS
+    grid = createGrid();
     visited = [];
 
     for (let i = 0; i < xSize; i++) {
@@ -210,36 +469,42 @@ async function bfs() {
 
         visited.push(temp);
     }
+    let first = true;
     //console.log('visited');
     stack = [];
-    stack.push(nodeAt(start))
+    stack.push(nodeAt(snake.body[snake.body.length - 1]));
     //console.log(stack);
     while (stack.length > 0) {
         val = stack.shift();
         val.closed = true;
         //console.log(currInd);
-
+        
         if (arr[val.position[0]][val.position[1]] != 1) {
             if (visited[val.position[0]][val.position[1]] == false) {
-                if (val.position[0] != 0 || val.position[1] != 0) {
-                    drawSq(val.position[0], val.position[1], 4)
+                if (val.position[0] == berry.location[0] && val.position[1] == berry.location[1]) {
+                    //console.log(nodeAt(val.position));
+                    let curr = nodeAt(val.position);
+                    while (curr.parent != null) {
+                        //drawSq(curr.position[0], curr.position[1], 5);
+                        PATH.push(findDirection(curr, curr.parent));
+                        curr = curr.parent;
+                    }
+                
+                    return;
                 }
                 //console.log(val);
-                await delay();
+                //await delay();
                 //console.log('lol');
                 visited[val.position[0]][val.position[1]] = true;
-                tmp = getAdjValues(val.position[0], val.position[1])
+                //if (first) {
+                    //first = false;
+                    tmp = getAdjValuesDIR(val.position[0], val.position[1], prevDirection);
+                //}
+                //else {
+                    tmp = getAdjValues(val.position[0], val.position[1]);
+                //}
                 for (let i = 0; i < tmp.length; i++) {
-                    if (tmp[i][0] == end[0] && tmp[i][1] == end[1]) {
-                        console.log(nodeAt(val.position));
-                        let curr = nodeAt(val.position);
-                        while (curr.parent != null) {
-                            drawSq(curr.position[0], curr.position[1], 5);
-                            console.log(curr.position);
-                            curr = curr.parent;
-                        }
-                        return;
-                    }
+
                     if (stack.length <= 10000) {
                         if (arr[tmp[i][0]][tmp[i][1]] != 1) {
                             var currNode = nodeAt(tmp[i]);
@@ -258,300 +523,100 @@ async function bfs() {
             }
 
             //stack = stack.splice(0, currInd-100);
-            document.getElementById('par').textContent = (stack.length);
+
 
         }
 
     }
 }
 
-async function dfs() {
-    visited = [];
-    for (let i = 0; i < xSize; i++) {
-        temp = [];
-        for (let j = 0; j < ySize; j++) {
-            temp.push(false);
-        }
-        visited.push(temp);
+document.getElementById('dfs').addEventListener('click', () => {
+    if (BEGIN) {
+
+        TAKEINPUT = false;
+        BEGIN = false;
+        dfs();
+        started = true;
+        INTERVAL = setInterval(() => { update() }, SNAKE_SPEED);
     }
-    stack = [];
-    stack.push(nodeAt(start));
+})
+document.getElementById('AS').addEventListener('click', () => {
+    if (BEGIN) {
 
-    while (stack.length > 0) {
-        val = stack.pop();
-        val.closed = true;
-        //console.log(currInd);
+        TAKEINPUT = false;
+        BEGIN = false;
+        astar();
+    }
+})
+document.getElementById('bfs').addEventListener('click', () => {
+    if (BEGIN) {
 
-        if (arr[val.position[0]][val.position[1]] != 1) {
-            if (visited[val.position[0]][val.position[1]] == false) {
-                if (val.position[0] != 0 || val.position[1] != 0) {
-                    drawSq(val.position[0], val.position[1], 4)
-                }
-                //console.log(val);
-                await delay();
-                //console.log('lol');
-                visited[val.position[0]][val.position[1]] = true;
-                tmp = getAdjValues(val.position[0], val.position[1])
-                for (let i = 0; i < tmp.length; i++) {
-                    if (tmp[i][0] == end[0] && tmp[i][1] == end[1]) {
-                        console.log(nodeAt(val.position));
-                        let curr = nodeAt(val.position);
-                        while (curr.parent != null) {
-                            drawSq(curr.position[0], curr.position[1], 5);
-                            console.log(curr.position);
-                            curr = curr.parent;
-                        }
-                        return;
-                    }
-                    if (stack.length <= 10000) {
-                        if (arr[tmp[i][0]][tmp[i][1]] != 1) {
-                            var currNode = nodeAt(tmp[i]);
-                            if (currNode.open || currNode.closed) {
-                                let a_ = 0;
-                            }
-                            else {
-                                currNode.parent = nodeAt(val.position);
-                                currNode.open = true;
-                                stack.push(nodeAt(tmp[i]));
-                            }
-                        }
-                    }
-                }
-
+        TAKEINPUT = false;
+        BEGIN = false;
+        bfs();
+        started = true;
+        INTERVAL = setInterval(() => { update() }, SNAKE_SPEED);
+    }
+});
+let THIS_EATEN_BERRY = true;
+let index = PATH.length - 1;
+function update() {
+    if (TAKEINPUT) {
+        if (currDirection == Direction.NONE) {
+            let resultupdate = snake.updateUsingDirection(prevDirection, EATEN_BERRY);
+            if (!resultupdate) {
+                clearInterval(INTERVAL);
             }
         }
-    }
-}
-let PERSON;
-let HIGHSCORE;
-const starter = {
-    name: 'Evan Merzon',
-    score: '5'
-}
-
-let SCORE = 5;
-let SNAKE_SPEED = parseInt(document.getElementById('speed').value);
-document.getElementById('speed').addEventListener('change', (e) => {
-    SNAKE_SPEED = parseInt(e.srcElement.val);
-});
-let INTERVAL;
-let started = false;
-document.getElementById('start').addEventListener('click', () => {
-    started = true;
-    INTERVAL = setInterval(() => {update()}, SNAKE_SPEED);
-});
-function Berry(){//COLOR = 3
-    this.location = [Math.floor(Math.random() * (xSize-1)), Math.floor(Math.random() * (ySize-1))];
-    this.drawBerry = function(){
-        drawSq(this.location[0], this.location[1], 3);
-    }
-    this.regenerate = function(){
-        SCORE++;
-        this.location = [Math.floor(Math.random() * (xSize-1)), Math.floor(Math.random() * (ySize-1))];
-        drawSq(this.location[0], this.location[1], 3);
-    }
-}
-var getFromLocalStorage = () => {
-    if(!window.localStorage.getItem('user')){
-        window.localStorage.setItem('user', JSON.stringify(starter));
-    }
-    let item = JSON.parse(window.localStorage.getItem('user'));
-    document.getElementById('highscore').textContent = "The highscore is " + item['score'] + ", made by " + item['name'];
-}
-var setInLocalStorage = () => {
-    if(window.localStorage.getItem('user')){
-        score = JSON.parse(window.localStorage.getItem('user'))
-        if(SCORE > score['score']){
-            window.localStorage.removeItem('user');
-            window.localStorage.setItem('user', JSON.stringify({name: document.getElementById('name').value, score:SCORE}));
-            document.getElementById('highscore').textContent = "The highscore is " + SCORE + ", made by " + document.getElementById('name').value;
-
-        }
-        else{
-            getFromLocalStorage();
-        }
-        //window.localStorage.removeItem('user')
-    }
-}
-
-getFromLocalStorage();
-
-var renderLose = () => {
-    setInLocalStorage();
-    c.beginPath();
-    c.fillStyle = "white";
-    c.rect(0, 0, xSize, ySize);
-    c.fill();
-    c.fillStyle = "red";
-    c.font = "150px Comic Sans MS";
-    c.textAlign = "center";
-    c.fillText("You Lose!", canvas.width/2, canvas.height/2); 
-}
-function Snake(){
-    this.body = [[0,0], [1,0], [2, 0], [3, 0], [4,0]];
-    this.checkIfDead = function(){
-        for(let i = 0; i < this.body.length; i ++){
-            for(let j = i+1; j < this.body.length; j ++){
-                if(this.body[i][0] == this.body[j][0] && this.body[i][1] == this.body[j][1]){
-                    clearInterval(INTERVAL);
-                    renderLose();
-                    
-                    console.log("DEAD");
-                    return false;
-                }
+        else {
+            let resultupdate = snake.updateUsingDirection(currDirection, EATEN_BERRY);
+            if (!resultupdate) {
+                clearInterval(INTERVAL);
             }
+            prevDirection = currDirection;
+            currDirection = Direction.NONE;
         }
-        return true;
     }
-    this.renderSnake = function(){
-        render();
-        for(let i = 0; i < this.body.length; i ++){
-            console.log(i);
-            drawSq(this.body[i][0], this.body[i][1], 2);
+    else {
+        if(index < 0){
+            index = PATH.length - 1;
         }
-        render();
-    }
-    this.updateUsingDirection = function(direction, bool){
-        if(bool){
-            let a = this.body.shift();
-            drawSq(a[0], a[1], 6);
+        console.log(PATH[index] + "index");
+        let resultupdate = snake.updateUsingDirection(PATH[index], THIS_EATEN_BERRY);
+        THIS_EATEN_BERRY = true;
+        if (!resultupdate) {
+            clearInterval(INTERVAL);
         }
-        
-        console.log(direction);
-        let newElement = [...this.body[this.body.length-1]];
-        switch(direction){
-            case Direction.LEFT:
-                newElement[0] --;
-                if(newElement[0] < 0){
-                    clearInterval(INTERVAL);
-                    renderLose();
-                }
-                console.log(newElement);
-                this.body.push(newElement);
-                break;
-            case Direction.RIGHT:
-                newElement[0] ++;
-                if(newElement[0] > xSize-1){
-                    clearInterval(INTERVAL);
-                    renderLose();
-                }
-                console.log(newElement);
-                this.body.push(newElement);
-                break;
-            case Direction.UP:
-                newElement[1] --;
-                if(newElement[1] < 0){
-                    clearInterval(INTERVAL);
-                    renderLose();
-                }
-                console.log(newElement);
-                this.body.push(newElement);
-                break;
-            case Direction.DOWN:
-                newElement[1] ++;
-                if(newElement[1] > ySize-1){
-                    clearInterval(INTERVAL);
-                    renderLose();
-                }
-                console.log(newElement);
-                this.body.push(newElement);
-                break;
+        //console.log("RUNNING");
+        if (index == 0) {
+            prevDirection = PATH[0];
+            PATH = [];
+            checkIfBerryGone();
+            THIS_EATEN_BERRY = false;
+            //setup();
+            //for(let i = 0; i < snake.body.length-1; i ++){
+                //arr[snake.body[i][0]][snake.body[i][1]] = 1;
+            //}
+            if(currAlgo == searchAlgo.BFS){
+                bfs();
+            }
+            else if(currAlgo == searchAlgo.DFS){
+                dfs();
+            }
+            else if(currAlgo == searchAlgo.ASTAR){
+                astar();
+            }
+            index = PATH.length - 1;
+            
         }
-        
-        this.renderSnake();
-    }
-}
+        index -= 1;
+        snake.checkIfDead();
 
-
-
-let snake = new Snake();
-let berry = new Berry();
-let EATEN_BERRY = true;
-berry.drawBerry();
-snake.renderSnake();
-function checkIfBerryGone(){
-    if(snake.body[snake.body.length-1][0] == berry.location[0] && snake.body[snake.body.length-1][1] == berry.location[1]){
-        console.log("EATEN!");
-        berry.regenerate();
-        document.getElementById('score').textContent = SCORE;
-        berry.drawBerry();
-        EATEN_BERRY = false;
-    }
-}
-const Direction = {
-    NONE: 0,
-    LEFT: 1,
-    RIGHT: 2,
-    UP: 3,
-    DOWN: 4
-}
-
-let prevDirection = Direction.RIGHT;
-let currDirection = Direction.RIGHT;
-document.addEventListener('keypress', (e) => {
-    /*if(e.key == 'w' || e.key == 'a' || e.key == 's' || e.key == 'd' && !started){
-        started = true;
-        INTERVAL = setInterval(() => {update()}, SNAKE_SPEED);
-    }*/
-    if(e.key == 'w' && started){
-        if(prevDirection != Direction.DOWN){
-            currDirection = Direction.UP;
-        }
-    }
-    if(e.key == 'a' && started){
-        if(prevDirection != Direction.RIGHT){
-            currDirection = Direction.LEFT;
-        }
-    }
-    if(e.key == 's' && started){
-        if(prevDirection != Direction.UP){
-            currDirection = Direction.DOWN;
-        }
-    }
-    if(e.key == 'd' && started){
-        if(prevDirection != Direction.LEFT){
-            currDirection = Direction.RIGHT;
-        }
-    }
-});
-document.addEventListener('keydown', (e) => {
-    if(e.keyCode>=38&&e.keyCode<=40 && !started){
-        started = true;
-        INTERVAL = setInterval(() => {update()}, SNAKE_SPEED);
-    }
-    if(e.keyCode == 38 && started){
-        if(prevDirection != Direction.DOWN){
-            currDirection = Direction.UP;
-        }
-    }
-    if(e.keyCode == 37 && started){
-        if(prevDirection != Direction.RIGHT){
-            currDirection = Direction.LEFT;
-        }
-    }
-    if(e.keyCode == 40 && started){
-        if(prevDirection != Direction.UP){
-            currDirection = Direction.DOWN;
-        }
-    }
-    if(e.keyCode == 39 && started){
-        if(prevDirection != Direction.LEFT){
-            currDirection = Direction.RIGHT;
-        }
-    }
-});
-function update(){
-    if(currDirection == Direction.NONE){
-        snake.updateUsingDirection(prevDirection, EATEN_BERRY);
-    }
-    else{
-        snake.updateUsingDirection(currDirection, EATEN_BERRY);
-        prevDirection = currDirection;
-        currDirection = Direction.NONE;
     }
     EATEN_BERRY = true;
     checkIfBerryGone();
     snake.checkIfDead();
-    
+
+
 }
 
