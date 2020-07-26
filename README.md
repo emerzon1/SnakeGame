@@ -10,5 +10,5 @@ Ideally, I would be saving the high scores in a text file or in a server/db usin
 Next steps:
 
 - [x] Use A* or BFS algo to have computer play the game and do well
-- [] Let user choose size
+- [ ] Let user choose size
 - **If anyone is looking at my project, let me know some suggestions**
