@@ -6,8 +6,8 @@ const color = ['white', 'red', 'red', 'green', 'CornflowerBlue', 'yellow', 'whit
 
 arr = [];
 let TAKEINPUT = true;
-let WIDTH = Math.max(Math.floor(window.innerWidth / 30) * 30 - 60, 750);
-let HEIGHT = Math.max(Math.floor(window.innerHeight / 30) * 30 - 180, 300);
+let WIDTH = Math.min(100000, Math.max(Math.floor(window.innerWidth / 30) * 30 - 60, 750));
+let HEIGHT = Math.min(60000000, Math.max(Math.floor(window.innerHeight / 30) * 30 - 180, 300));
 let PROBWALL = 0;
 const canvas = document.getElementById('myCanvas');
 canvas.width = WIDTH;
@@ -69,7 +69,6 @@ function createGrid() {
     }
     return res;
 }
-//setup
 
 
 var drawSq = (i, j, col) => {
@@ -96,9 +95,7 @@ function delay(a) {
 
 }
 
-var getAdjValuesAS = (i, j) => { // * * *
-    // * - *
-    // * * *
+var getAdjValuesAS = (i, j) => { 
     let res = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]//, [i - 1, j - 1], [i - 1, j + 1], [i + 1, j - 1], [i + 1, j + 1]];
     let actualRes = [];
     for (let i = 0; i < res.length; i++) {
@@ -179,7 +176,7 @@ var setInLocalStorage = () => {
         else {
             getFromLocalStorage();
         }
-        //window.localStorage.removeItem('user')
+
     }
 }
 
@@ -189,8 +186,6 @@ var renderLose = () => {
     setInLocalStorage();
     c.beginPath();
     c.fillStyle = "darkCyan";
-    //c.rect(0, 0, xSize, ySize);
-    //c.fill();
 
     c.font = "150px Comic Sans MS";
     c.textAlign = "center";
@@ -284,9 +279,7 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
-function getAdjValues(i, j) { // * * *
-    // * - *
-    // * * *
+function getAdjValues(i, j) { 
     let res = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]];
     let actualRes = [];
     for (let i = 0; i < res.length; i++) {
@@ -307,9 +300,7 @@ function getAdjValues(i, j) { // * * *
 
     return actualRes;
 }
-var getAdjValuesDIR = (i, j, dir) => { // * * *
-    // * - *
-    // * * *
+var getAdjValuesDIR = (i, j, dir) => { 
     let res = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]];
     if (dir == Direction.RIGHT) {
         res.splice(3, 1);
@@ -373,12 +364,10 @@ async function astar() {
     while (!open.empty()) {
         q = open.pop();
         q.closed = true;
-        //drawSq(q.position[0], q.position[1], 4);
         if (q.position[0] == berry.location[0] && q.position[1] == berry.location[1]) {
 
             let curr = nodeAt(q.position);
             while (curr.parent != null) {
-                //drawSq(curr.position[0], curr.position[1], 5);
                 PATH.push(findDirection(curr, curr.parent));
                 curr = curr.parent;
             }
@@ -399,7 +388,7 @@ async function astar() {
             }
             nodeG = q.g + 1;
 
-            if (!cNode.open || nodeG < cNode.g) {//H value will be same so only need to compare G, not f
+            if (!cNode.open || nodeG < cNode.g) {
                 cNode.g = nodeG;
                 let hVal = manhattan(cNode.position, end);
                 cNode.f = hVal + cNode.g;
@@ -413,8 +402,6 @@ async function astar() {
                 }
             }
         }
-        //drawSq(start[0], start[1], 2);
-        //await delay();
     }
     console.log("ENDED LOOP");
     while(q.parent != null){
@@ -447,19 +434,12 @@ async function dfs() {
 
                     let curr = nodeAt(val.position);
                     while (curr.parent != null) {
-                        //drawSq(curr.position[0], curr.position[1], 5);
                         PATH.push(findDirection(curr, curr.parent));
                         curr = curr.parent;
                     }
                     
                     return;
                 }
-                //if (val.position[0] != 0 || val.position[1] != 0) {
-                //drawSq(val.position[0], val.position[1], 4)
-                //}
-
-                //await delay(SNAKE_SPEED);
-
                 visited[val.position[0]][val.position[1]] = true;
                 if (first) {
                     first = false;
@@ -525,16 +505,12 @@ async function bfs() {
 
                     let curr = nodeAt(val.position);
                     while (curr.parent != null) {
-                        //drawSq(curr.position[0], curr.position[1], 5);
                         PATH.push(findDirection(curr, curr.parent));
                         curr = curr.parent;
                     }
                 
                     return;
                 }
-
-                //await delay();
-
                 visited[val.position[0]][val.position[1]] = true;
                 if (first) {
                     first = false;
@@ -561,9 +537,6 @@ async function bfs() {
                 }
 
             }
-
-            //stack = stack.splice(0, currInd-100);
-
 
         }
 
@@ -651,10 +624,6 @@ function update() {
             if(snake.body.length > 0){
                 prevSnake = [...snake.body];
             }
-            //setup();
-            //for(let i = 0; i < snake.body.length-1; i ++){
-                //arr[snake.body[i][0]][snake.body[i][1]] = 1;
-            //}
             if(currAlgo == searchAlgo.BFS){
                 bfs();
             }
