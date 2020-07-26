@@ -11,5 +11,4 @@ Next steps:
 
 - [x] Use A*, DFS, or BFS algo to have computer play the game and do well
 - [ ] Let user choose size -- unnecessary? It is already responsive
-- 
 - **If anyone is looking at my project, let me know some suggestions**
