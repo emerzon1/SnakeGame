@@ -3,7 +3,7 @@ const color = ['white', 'red', 'red', 'green', 'CornflowerBlue', 'yellow', 'whit
    USE MongoDB to store scores
 */
 
-console.log(color)
+
 arr = [];
 let TAKEINPUT = true;
 let WIDTH = Math.max(Math.floor(window.innerWidth / 30) * 30 - 60, 750);
@@ -118,59 +118,12 @@ let tmp;
 let currInd = 0;
 let open;
 let closed;
-
+let currAlgo = -1;
 function manhattan(a, b) {
     return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
 }
 let q;
-async function astar() {
-    open = new Heap((a, b) => a.f - b.f)
 
-    let startNode = nodeAt(start);
-    startNode.f = 0;
-    startNode.g = 0;
-    startNode.open = true;
-    open.push(new Node(start));
-    while (!open.empty()) {
-        q = open.pop();
-        q.closed = true;
-        drawSq(q.position[0], q.position[1], 4);
-        if (q.position[0] == end[0] && q.position[1] == end[1]) {
-            console.log(nodeAt(q.position));
-            let curr = nodeAt(q.position);
-            while (curr.parent != null) {
-                drawSq(curr.position[0], curr.position[1], 5);
-                console.log(curr.position);
-                curr = curr.parent;
-            }
-            return;
-        }
-        let neighbors = getAdjValues(q.position[0], q.position[1]);
-        for (let i = 0; i < neighbors.length; i++) {
-            var cNode = nodeAt(neighbors[i]);
-            if (cNode.closed) {
-                continue;
-            }
-            nodeG = q.g + 1;
-
-            if (!cNode.open || nodeG < cNode.g) {//H value will be same so only need to compare G, not f
-                cNode.g = nodeG;
-                let hVal = manhattan(cNode.position, end);
-                cNode.f = hVal + cNode.g;
-                cNode.parent = q;
-                if (!cNode.open) {
-                    open.push(nodeAt(neighbors[i]));
-                    cNode.open = true;
-                }
-                else {
-                    open.updateItem(cNode);
-                }
-            }
-        }
-        drawSq(start[0], start[1], 2);
-        await delay();
-    }
-}
 function nodeAt(val) {
     return grid[val[0]][val[1]];
 }
@@ -200,12 +153,26 @@ var getFromLocalStorage = () => {
     let item = JSON.parse(window.localStorage.getItem('user'));
     document.getElementById('highscore').textContent = "The highscore is " + item['score'] + ", made by " + item['name'];
 }
+var getName = (a, b) => {
+    if(b == -1){
+        return a;
+    }
+    if(b==0){
+        return "Computer: A*";
+    }
+    if(b==1){
+        return "Computer: DFS";
+    }
+    
+    return "Computer: BFS";
+    
+}
 var setInLocalStorage = () => {
     if (window.localStorage.getItem('user')) {
         score = JSON.parse(window.localStorage.getItem('user'))
         if (SCORE > score['score']) {
             window.localStorage.removeItem('user');
-            window.localStorage.setItem('user', JSON.stringify({ name: document.getElementById('name').value, score: SCORE }));
+            window.localStorage.setItem('user', JSON.stringify({ name: getName(document.getElementById('name').value, currAlgo), score: SCORE }));
             document.getElementById('highscore').textContent = "The highscore is " + SCORE + ", made by " + document.getElementById('name').value;
 
         }
@@ -221,10 +188,10 @@ getFromLocalStorage();
 var renderLose = () => {
     setInLocalStorage();
     c.beginPath();
-    c.fillStyle = "white";
-    c.rect(0, 0, xSize, ySize);
-    c.fill();
-    c.fillStyle = "red";
+    c.fillStyle = "darkCyan";
+    //c.rect(0, 0, xSize, ySize);
+    //c.fill();
+
     c.font = "150px Comic Sans MS";
     c.textAlign = "center";
     c.fillText("You Lose!", canvas.width / 2, canvas.height / 2);
@@ -248,7 +215,7 @@ berry.drawBerry();
 snake.renderSnake();
 function checkIfBerryGone() {
     if (snake.body[snake.body.length - 1][0] == berry.location[0] && snake.body[snake.body.length - 1][1] == berry.location[1]) {
-        console.log("EATEN!");
+
         berry.regenerate();
         document.getElementById('score').textContent = SCORE;
         berry.drawBerry();
@@ -359,9 +326,15 @@ var getAdjValuesDIR = (i, j, dir) => { // * * *
     let actualRes = [];
     for (let i = 0; i < res.length; i++) {
         if ((res[i][0] >= 0 && res[i][0] < xSize) && (res[i][1] >= 0 && res[i][1] < ySize)) {
-            //if (arr[res[i][0]][res[i][1]] != 1) {
-                actualRes.push(res[i])
-            //}
+            var push = true;
+                for(let j = 0; j < snake.body.length; j ++){
+                    if(snake.body[j][0] == res[i][0] && snake.body[j][1] == res[i][1]){
+                        push = false;
+                    }
+                }
+                if(push){
+                    actualRes.push(res[i]);
+                } 
         }
     }
 
@@ -379,7 +352,7 @@ var findDirection = (a, b) => {
     }
     return Direction.UP;
 }
-let currAlgo = -1;
+
 const searchAlgo  = {
     NONE: -1,
     ASTAR: 0,
@@ -387,9 +360,71 @@ const searchAlgo  = {
     BFS: 2
 }
 let PATH = [];
+async function astar() {
+    currAlgo = searchAlgo.ASTAR;
+    open = new Heap((a, b) => a.f - b.f)
+
+    let startNode = nodeAt(snake.body[snake.body.length - 1]);
+    startNode.f = 0;
+    startNode.g = 0;
+    startNode.open = true;
+    open.push(startNode);
+    let first = true;
+    while (!open.empty()) {
+        q = open.pop();
+        q.closed = true;
+        //drawSq(q.position[0], q.position[1], 4);
+        if (q.position[0] == berry.location[0] && q.position[1] == berry.location[1]) {
+
+            let curr = nodeAt(q.position);
+            while (curr.parent != null) {
+                //drawSq(curr.position[0], curr.position[1], 5);
+                PATH.push(findDirection(curr, curr.parent));
+                curr = curr.parent;
+            }
+            return;
+        }
+        let neighbors;
+        if (first) {
+            first = false;
+            neighbors = getAdjValuesDIR(q.position[0], q.position[1], prevDirection);
+        }
+        else {
+            neighbors = getAdjValues(q.position[0], q.position[1]);
+        }
+        for (let i = 0; i < neighbors.length; i++) {
+            var cNode = nodeAt(neighbors[i]);
+            if (cNode.closed) {
+                continue;
+            }
+            nodeG = q.g + 1;
+
+            if (!cNode.open || nodeG < cNode.g) {//H value will be same so only need to compare G, not f
+                cNode.g = nodeG;
+                let hVal = manhattan(cNode.position, end);
+                cNode.f = hVal + cNode.g;
+                cNode.parent = q;
+                if (!cNode.open) {
+                    open.push(nodeAt(neighbors[i]));
+                    cNode.open = true;
+                }
+                else {
+                    open.updateItem(cNode);
+                }
+            }
+        }
+        //drawSq(start[0], start[1], 2);
+        //await delay();
+    }
+    console.log("ENDED LOOP");
+    while(q.parent != null){
+        PATH.push(findDirection(q, q.parent));
+        q = q.parent;
+    }
+}
 async function dfs() {
     currAlgo = searchAlgo.DFS;
-    grid = createGrid();
+
     visited = [];
     for (let i = 0; i < xSize; i++) {
         temp = [];
@@ -404,12 +439,12 @@ async function dfs() {
     while (stack.length > 0) {
         val = stack.pop();
         val.closed = true;
-        //console.log(currInd);
+
         
         if (arr[val.position[0]][val.position[1]] != 1) {
             if (visited[val.position[0]][val.position[1]] == false) {
                 if (val.position[0] == berry.location[0] && val.position[1] == berry.location[1]) {
-                    //console.log(nodeAt(berry.location));
+
                     let curr = nodeAt(val.position);
                     while (curr.parent != null) {
                         //drawSq(curr.position[0], curr.position[1], 5);
@@ -422,7 +457,7 @@ async function dfs() {
                 //if (val.position[0] != 0 || val.position[1] != 0) {
                 //drawSq(val.position[0], val.position[1], 4)
                 //}
-                //console.log(val);
+
                 //await delay(SNAKE_SPEED);
 
                 visited[val.position[0]][val.position[1]] = true;
@@ -453,10 +488,15 @@ async function dfs() {
             }
         }
     }
+    console.log("ENDED LOOP");
+    while(val.parent != null){
+        PATH.push(findDirection(val, val.parent));
+        val = val.parent;
+    }
 }
 async function bfs() {
     currAlgo = searchAlgo.BFS
-    grid = createGrid();
+
     visited = [];
 
     for (let i = 0; i < xSize; i++) {
@@ -470,19 +510,19 @@ async function bfs() {
         visited.push(temp);
     }
     let first = true;
-    //console.log('visited');
+
     stack = [];
     stack.push(nodeAt(snake.body[snake.body.length - 1]));
-    //console.log(stack);
+
     while (stack.length > 0) {
         val = stack.shift();
         val.closed = true;
-        //console.log(currInd);
+
         
         if (arr[val.position[0]][val.position[1]] != 1) {
             if (visited[val.position[0]][val.position[1]] == false) {
                 if (val.position[0] == berry.location[0] && val.position[1] == berry.location[1]) {
-                    //console.log(nodeAt(val.position));
+
                     let curr = nodeAt(val.position);
                     while (curr.parent != null) {
                         //drawSq(curr.position[0], curr.position[1], 5);
@@ -492,17 +532,17 @@ async function bfs() {
                 
                     return;
                 }
-                //console.log(val);
+
                 //await delay();
-                //console.log('lol');
+
                 visited[val.position[0]][val.position[1]] = true;
-                //if (first) {
-                    //first = false;
+                if (first) {
+                    first = false;
                     tmp = getAdjValuesDIR(val.position[0], val.position[1], prevDirection);
-                //}
-                //else {
+                }
+                else {
                     tmp = getAdjValues(val.position[0], val.position[1]);
-                //}
+                }
                 for (let i = 0; i < tmp.length; i++) {
 
                     if (stack.length <= 10000) {
@@ -528,6 +568,12 @@ async function bfs() {
         }
 
     }
+    console.log(val);
+    while(val.parent != null){
+        console.log("Not null");
+        PATH.push(findDirection(val, val.parent));
+        val = val.parent;
+    }
 }
 
 document.getElementById('dfs').addEventListener('click', () => {
@@ -546,6 +592,8 @@ document.getElementById('AS').addEventListener('click', () => {
         TAKEINPUT = false;
         BEGIN = false;
         astar();
+        started = true;
+        INTERVAL = setInterval(() => { update() }, SNAKE_SPEED);
     }
 })
 document.getElementById('bfs').addEventListener('click', () => {
@@ -560,17 +608,20 @@ document.getElementById('bfs').addEventListener('click', () => {
 });
 let THIS_EATEN_BERRY = true;
 let index = PATH.length - 1;
+let prevSnake = snake.body;
 function update() {
     if (TAKEINPUT) {
         if (currDirection == Direction.NONE) {
             let resultupdate = snake.updateUsingDirection(prevDirection, EATEN_BERRY);
             if (!resultupdate) {
+                renderLose();
                 clearInterval(INTERVAL);
             }
         }
         else {
             let resultupdate = snake.updateUsingDirection(currDirection, EATEN_BERRY);
             if (!resultupdate) {
+                renderLose();
                 clearInterval(INTERVAL);
             }
             prevDirection = currDirection;
@@ -581,18 +632,25 @@ function update() {
         if(index < 0){
             index = PATH.length - 1;
         }
-        console.log(PATH[index] + "index");
+
         let resultupdate = snake.updateUsingDirection(PATH[index], THIS_EATEN_BERRY);
         THIS_EATEN_BERRY = true;
         if (!resultupdate) {
+            renderLose();
             clearInterval(INTERVAL);
         }
-        //console.log("RUNNING");
+
         if (index == 0) {
+
             prevDirection = PATH[0];
             PATH = [];
             checkIfBerryGone();
             THIS_EATEN_BERRY = false;
+            grid = [];
+            grid = [...createGrid()];
+            if(snake.body.length > 0){
+                prevSnake = [...snake.body];
+            }
             //setup();
             //for(let i = 0; i < snake.body.length-1; i ++){
                 //arr[snake.body[i][0]][snake.body[i][1]] = 1;
@@ -606,10 +664,18 @@ function update() {
             else if(currAlgo == searchAlgo.ASTAR){
                 astar();
             }
+            if(PATH.length == 0){
+                clearInterval(INTERVAL);
+                drawSq(prevSnake[prevSnake.length-1][0], prevSnake[prevSnake.length-1][1], 5);
+                renderLose();
+            }
             index = PATH.length - 1;
             
         }
-        index -= 1;
+        else{
+            index -= 1;
+        }
+
         snake.checkIfDead();
 
     }

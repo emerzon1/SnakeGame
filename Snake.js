@@ -29,9 +29,9 @@ function Snake(interval){
             drawSq(a[0], a[1], 6);
         }
         
-        console.log(direction);
+
         let newElement = [...this.body[this.body.length-1]];
-        console.log(newElement);
+
         switch(direction){
             case Direction.LEFT:
                 newElement[0] --;

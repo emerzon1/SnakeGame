@@ -9,7 +9,7 @@ Ideally, I would be saving the high scores in a text file or in a server/db usin
 
 Next steps:
 
-- [x] Use A* or BFS algo to have computer play the game and do well
-- [ ] Let user choose size
-- The app crashed when user has computer play game at around 80 length, too much memory usage.  How can I fix this?
+- [x] Use A*, DFS, or BFS algo to have computer play the game and do well
+- [ ] Let user choose size -- unnecessary? It is already responsive
+- 
 - **If anyone is looking at my project, let me know some suggestions**
