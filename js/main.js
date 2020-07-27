@@ -1,15 +1,28 @@
-const color = ['white', 'red', 'red', 'green', 'CornflowerBlue', 'yellow', 'white']
+const color = [
+    "white",
+    "red",
+    "red",
+    "green",
+    "CornflowerBlue",
+    "yellow",
+    "white",
+];
 /* TODO ==> 
    USE MongoDB to store scores
 */
 
-
 arr = [];
 let TAKEINPUT = true;
-let WIDTH = Math.min(100000, Math.max(Math.floor(window.innerWidth / 30) * 30 - 60, 750));
-let HEIGHT = Math.min(60000000, Math.max(Math.floor(window.innerHeight / 30) * 30 - 180, 300));
+let WIDTH = Math.min(
+    100000,
+    Math.max(Math.floor(window.innerWidth / 30) * 30 - 60, 750)
+);
+let HEIGHT = Math.min(
+    60000000,
+    Math.max(Math.floor(window.innerHeight / 30) * 30 - 180, 300)
+);
 let PROBWALL = 0;
-const canvas = document.getElementById('myCanvas');
+const canvas = document.getElementById("myCanvas");
 canvas.width = WIDTH;
 c = canvas.getContext("2d");
 const rectSize = 30;
@@ -25,14 +38,11 @@ var setup = () => {
     for (let i = 0; i < xSize; i++) {
         temp = [];
         for (let j = 0; j < ySize; j++) {
-
-
-            temp.push((Math.random() < PROBWALL) ? 1 : 0);
-
+            temp.push(Math.random() < PROBWALL ? 1 : 0);
         }
         arr.push(temp);
     }
-}
+};
 var render = () => {
     for (let i = 0; i < arr.length; i++) {
         for (let j = 0; j < arr[i].length; j++) {
@@ -40,18 +50,15 @@ var render = () => {
             c.rect(i * rectSize, j * rectSize, rectSize, rectSize);
             if (arr[i][j] == 0) {
                 c.stroke();
-            }
-            else {
-                c.fillStyle = color[arr[i][j]]
+            } else {
+                c.fillStyle = color[arr[i][j]];
                 c.fill();
             }
         }
     }
-}
+};
 setup();
 render();
-
-
 
 function createGrid() {
     let res = [];
@@ -60,8 +67,7 @@ function createGrid() {
         for (let j = 0; j < ySize; j++) {
             if (arr[i][j] != 1) {
                 temp.push(new Node([i, j]));
-            }
-            else {
+            } else {
                 temp.push("");
             }
         }
@@ -70,44 +76,53 @@ function createGrid() {
     return res;
 }
 
-
 var drawSq = (i, j, col) => {
     c.beginPath();
     c.rect(i * rectSize, j * rectSize, rectSize, rectSize);
     if (col == 0) {
-        c.stroke()
-    }
-    else {
+        c.stroke();
+    } else {
         c.fillStyle = color[col];
         c.fill();
     }
-
-}
+};
 
 let grid = createGrid();
-document.getElementById('reset').addEventListener('click', () => {
+document.getElementById("reset").addEventListener("click", () => {
     location.reload();
-})
-function delay(a) {
-    return new Promise(resolve => {
-        setTimeout(() => { resolve(); }, a);
-    });
+});
 
+function delay(a) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve();
+        }, a);
+    });
 }
 
-var getAdjValuesAS = (i, j) => { 
-    let res = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]//, [i - 1, j - 1], [i - 1, j + 1], [i + 1, j - 1], [i + 1, j + 1]];
+var getAdjValuesAS = (i, j) => {
+    let res = [
+        [i, j - 1],
+        [i + 1, j],
+        [i, j + 1],
+        [i - 1, j],
+    ]; //, [i - 1, j - 1], [i - 1, j + 1], [i + 1, j - 1], [i + 1, j + 1]];
     let actualRes = [];
     for (let i = 0; i < res.length; i++) {
-        if ((res[i][0] >= 0 && res[i][0] < xSize) && (res[i][1] >= 0 && res[i][1] < ySize)) {
+        if (
+            res[i][0] >= 0 &&
+            res[i][0] < xSize &&
+            res[i][1] >= 0 &&
+            res[i][1] < ySize
+        ) {
             if (arr[res[i][0]][res[i][1]] != 1) {
-                actualRes.push(res[i])
+                actualRes.push(res[i]);
             }
         }
     }
 
     return actualRes;
-}
+};
 let stack;
 let val;
 let visited;
@@ -116,6 +131,7 @@ let currInd = 0;
 let open;
 let closed;
 let currAlgo = -1;
+
 function manhattan(a, b) {
     return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
 }
@@ -128,57 +144,69 @@ function nodeAt(val) {
 let PERSON;
 let HIGHSCORE;
 const starter = {
-    name: 'Evan Merzon',
-    score: '5'
-}
+    name: "Evan Merzon",
+    score: "5",
+};
 
 let SCORE = 5;
-let SNAKE_SPEED = parseInt(document.getElementById('speed').value);
-document.getElementById('speed').addEventListener('change', (e) => {
-    SNAKE_SPEED = parseInt(document.getElementById('speed').value);
+let SNAKE_SPEED = parseInt(document.getElementById("speed").value);
+document.getElementById("speed").addEventListener("change", (e) => {
+    SNAKE_SPEED = parseInt(document.getElementById("speed").value);
 });
 let INTERVAL;
 let started = false;
-document.getElementById('start').addEventListener('click', () => {
+document.getElementById("start").addEventListener("click", () => {
     started = true;
-    INTERVAL = setInterval(() => { update() }, SNAKE_SPEED);
+    INTERVAL = setInterval(() => {
+        update();
+    }, SNAKE_SPEED);
 });
 var getFromLocalStorage = () => {
-    if (!window.localStorage.getItem('user')) {
-        window.localStorage.setItem('user', JSON.stringify(starter));
+    if (!window.localStorage.getItem("user")) {
+        window.localStorage.setItem("user", JSON.stringify(starter));
     }
-    let item = JSON.parse(window.localStorage.getItem('user'));
-    document.getElementById('highscore').textContent = "The highscore is " + item['score'] + ", made by " + item['name'];
-}
+    let item = JSON.parse(window.localStorage.getItem("user"));
+    document.getElementById("highscore").textContent =
+        "The highscore is " + item["score"] + ", made by " + item["name"];
+};
 var getName = (a, b) => {
-    if(b == -1){
+    if (b == -1) {
         return a;
     }
-    if(b==0){
+    if (b == 0) {
         return "Computer: A*";
     }
-    if(b==1){
+    if (b == 1) {
         return "Computer: DFS";
     }
-    
-    return "Computer: BFS";
-    
-}
-var setInLocalStorage = () => {
-    if (window.localStorage.getItem('user')) {
-        score = JSON.parse(window.localStorage.getItem('user'))
-        if (SCORE > score['score']) {
-            window.localStorage.removeItem('user');
-            window.localStorage.setItem('user', JSON.stringify({ name: getName(document.getElementById('name').value, currAlgo), score: SCORE }));
-            document.getElementById('highscore').textContent = "The highscore is " + SCORE + ", made by " + document.getElementById('name').value;
 
-        }
-        else {
+    return "Computer: BFS";
+};
+var setInLocalStorage = () => {
+    if (window.localStorage.getItem("user")) {
+        score = JSON.parse(window.localStorage.getItem("user"));
+        if (SCORE > score["score"]) {
+            window.localStorage.removeItem("user");
+            window.localStorage.setItem(
+                "user",
+                JSON.stringify({
+                    name: getName(
+                        document.getElementById("name").value,
+                        currAlgo
+                    ),
+                    score: SCORE,
+                })
+            );
+            document.getElementById("highscore").textContent =
+                "The highscore is " +
+                SCORE +
+                ", made by " +
+                document.getElementById("name").value;
+        } else {
             getFromLocalStorage();
         }
-
     }
-}
+};
 
 getFromLocalStorage();
 
@@ -190,16 +218,17 @@ var renderLose = () => {
     c.font = "150px Comic Sans MS";
     c.textAlign = "center";
     c.fillText("You Lose!", canvas.width / 2, canvas.height / 2);
-}
-
-
-
+};
 
 let snake = new Snake(INTERVAL);
 let berry = new Berry();
+
 function inSnake(location) {
     for (let i = 0; i < snake.body.length; i++) {
-        if (snake.body[i][0] == location[0] && snake.body[i][1] == location[1]) {
+        if (
+            snake.body[i][0] == location[0] &&
+            snake.body[i][1] == location[1]
+        ) {
             return true;
         }
     }
@@ -208,54 +237,58 @@ function inSnake(location) {
 let EATEN_BERRY = true;
 berry.drawBerry();
 snake.renderSnake();
-function checkIfBerryGone() {
-    if (snake.body[snake.body.length - 1][0] == berry.location[0] && snake.body[snake.body.length - 1][1] == berry.location[1]) {
 
+function checkIfBerryGone() {
+    if (
+        snake.body[snake.body.length - 1][0] == berry.location[0] &&
+        snake.body[snake.body.length - 1][1] == berry.location[1]
+    ) {
         berry.regenerate();
-        document.getElementById('score').textContent = SCORE;
+        document.getElementById("score").textContent = SCORE;
         berry.drawBerry();
         EATEN_BERRY = false;
     }
 }
 
-
 let prevDirection = Direction.RIGHT;
 let currDirection = Direction.RIGHT;
-document.addEventListener('keypress', (e) => {
+document.addEventListener("keypress", (e) => {
     if (TAKEINPUT) {
         BEGIN = false;
         /*if(e.key == 'w' || e.key == 'a' || e.key == 's' || e.key == 'd' && !started){
             started = true;
             INTERVAL = setInterval(() => {update()}, SNAKE_SPEED);
         }*/
-        if (e.key == 'w' && started) {
+        if (e.key == "w" && started) {
             if (prevDirection != Direction.DOWN) {
                 currDirection = Direction.UP;
             }
         }
-        if (e.key == 'a' && started) {
+        if (e.key == "a" && started) {
             if (prevDirection != Direction.RIGHT) {
                 currDirection = Direction.LEFT;
             }
         }
-        if (e.key == 's' && started) {
+        if (e.key == "s" && started) {
             if (prevDirection != Direction.UP) {
                 currDirection = Direction.DOWN;
             }
         }
-        if (e.key == 'd' && started) {
+        if (e.key == "d" && started) {
             if (prevDirection != Direction.LEFT) {
                 currDirection = Direction.RIGHT;
             }
         }
     }
 });
-document.addEventListener('keydown', (e) => {
+document.addEventListener("keydown", (e) => {
     if (TAKEINPUT) {
         BEGIN = false;
         if (e.keyCode >= 38 && e.keyCode <= 40 && !started) {
             started = true;
-            INTERVAL = setInterval(() => { update() }, SNAKE_SPEED);
+            INTERVAL = setInterval(() => {
+                update();
+            }, SNAKE_SPEED);
         }
         if (e.keyCode == 38 && started) {
             if (prevDirection != Direction.DOWN) {
@@ -279,58 +312,85 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
-function getAdjValues(i, j) { 
-    let res = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]];
+
+function getAdjValues(i, j) {
+    let res = [
+        [i, j - 1],
+        [i + 1, j],
+        [i, j + 1],
+        [i - 1, j],
+    ];
     let actualRes = [];
     for (let i = 0; i < res.length; i++) {
-        if ((res[i][0] >= 0 && res[i][0] < xSize) && (res[i][1] >= 0 && res[i][1] < ySize)) {
+        if (
+            res[i][0] >= 0 &&
+            res[i][0] < xSize &&
+            res[i][1] >= 0 &&
+            res[i][1] < ySize
+        ) {
             if (arr[res[i][0]][res[i][1]] != 1) {
                 var push = true;
-                for(let j = 0; j < snake.body.length; j ++){
-                    if(snake.body[j][0] == res[i][0] && snake.body[j][1] == res[i][1]){
+                for (let j = 0; j < snake.body.length; j++) {
+                    if (
+                        snake.body[j][0] == res[i][0] &&
+                        snake.body[j][1] == res[i][1]
+                    ) {
                         push = false;
                     }
                 }
-                if(push){
+                if (push) {
                     actualRes.push(res[i]);
-                } 
+                }
             }
         }
     }
 
     return actualRes;
 }
-var getAdjValuesDIR = (i, j, dir) => { 
-    let res = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]];
+var getAdjValuesDIR = (i, j, dir) => {
+    let res = [
+        [i, j - 1],
+        [i + 1, j],
+        [i, j + 1],
+        [i - 1, j],
+    ];
     if (dir == Direction.RIGHT) {
         res.splice(3, 1);
     }
     if (dir == Direction.LEFT) {
-        res.splice(1, 1)
+        res.splice(1, 1);
     }
     if (dir == Direction.UP) {
-        res.splice(2, 1)
+        res.splice(2, 1);
     }
     if (dir == Direction.DOWN) {
         res.splice(0, 1);
     }
     let actualRes = [];
     for (let i = 0; i < res.length; i++) {
-        if ((res[i][0] >= 0 && res[i][0] < xSize) && (res[i][1] >= 0 && res[i][1] < ySize)) {
+        if (
+            res[i][0] >= 0 &&
+            res[i][0] < xSize &&
+            res[i][1] >= 0 &&
+            res[i][1] < ySize
+        ) {
             var push = true;
-                for(let j = 0; j < snake.body.length; j ++){
-                    if(snake.body[j][0] == res[i][0] && snake.body[j][1] == res[i][1]){
-                        push = false;
-                    }
+            for (let j = 0; j < snake.body.length; j++) {
+                if (
+                    snake.body[j][0] == res[i][0] &&
+                    snake.body[j][1] == res[i][1]
+                ) {
+                    push = false;
                 }
-                if(push){
-                    actualRes.push(res[i]);
-                } 
+            }
+            if (push) {
+                actualRes.push(res[i]);
+            }
         }
     }
 
     return actualRes;
-}
+};
 var findDirection = (a, b) => {
     if (a.position[0] > b.position[0]) {
         return Direction.RIGHT;
@@ -342,18 +402,18 @@ var findDirection = (a, b) => {
         return Direction.DOWN;
     }
     return Direction.UP;
-}
+};
 
-const searchAlgo  = {
+const searchAlgo = {
     NONE: -1,
     ASTAR: 0,
     DFS: 1,
-    BFS: 2
-}
+    BFS: 2,
+};
 let PATH = [];
 async function astar() {
     currAlgo = searchAlgo.ASTAR;
-    open = new Heap((a, b) => a.f - b.f)
+    open = new Heap((a, b) => a.f - b.f);
 
     let startNode = nodeAt(snake.body[snake.body.length - 1]);
     startNode.f = 0;
@@ -364,8 +424,10 @@ async function astar() {
     while (!open.empty()) {
         q = open.pop();
         q.closed = true;
-        if (q.position[0] == berry.location[0] && q.position[1] == berry.location[1]) {
-
+        if (
+            q.position[0] == berry.location[0] &&
+            q.position[1] == berry.location[1]
+        ) {
             let curr = nodeAt(q.position);
             while (curr.parent != null) {
                 PATH.push(findDirection(curr, curr.parent));
@@ -376,9 +438,12 @@ async function astar() {
         let neighbors;
         if (first) {
             first = false;
-            neighbors = getAdjValuesDIR(q.position[0], q.position[1], prevDirection);
-        }
-        else {
+            neighbors = getAdjValuesDIR(
+                q.position[0],
+                q.position[1],
+                prevDirection
+            );
+        } else {
             neighbors = getAdjValues(q.position[0], q.position[1]);
         }
         for (let i = 0; i < neighbors.length; i++) {
@@ -396,15 +461,14 @@ async function astar() {
                 if (!cNode.open) {
                     open.push(nodeAt(neighbors[i]));
                     cNode.open = true;
-                }
-                else {
+                } else {
                     open.updateItem(cNode);
                 }
             }
         }
     }
     console.log("ENDED LOOP");
-    while(q.parent != null){
+    while (q.parent != null) {
         PATH.push(findDirection(q, q.parent));
         q = q.parent;
     }
@@ -427,36 +491,38 @@ async function dfs() {
         val = stack.pop();
         val.closed = true;
 
-        
         if (arr[val.position[0]][val.position[1]] != 1) {
             if (visited[val.position[0]][val.position[1]] == false) {
-                if (val.position[0] == berry.location[0] && val.position[1] == berry.location[1]) {
-
+                if (
+                    val.position[0] == berry.location[0] &&
+                    val.position[1] == berry.location[1]
+                ) {
                     let curr = nodeAt(val.position);
                     while (curr.parent != null) {
                         PATH.push(findDirection(curr, curr.parent));
                         curr = curr.parent;
                     }
-                    
+
                     return;
                 }
                 visited[val.position[0]][val.position[1]] = true;
                 if (first) {
                     first = false;
-                    tmp = getAdjValuesDIR(val.position[0], val.position[1], prevDirection);
-                }
-                else {
+                    tmp = getAdjValuesDIR(
+                        val.position[0],
+                        val.position[1],
+                        prevDirection
+                    );
+                } else {
                     tmp = getAdjValues(val.position[0], val.position[1]);
                 }
                 for (let i = 0; i < tmp.length; i++) {
-
                     if (stack.length <= 10000) {
                         if (arr[tmp[i][0]][tmp[i][1]] != 1) {
                             var currNode = nodeAt(tmp[i]);
                             if (currNode.closed) {
                                 let a_ = 0;
-                            }
-                            else {
+                            } else {
                                 currNode.parent = nodeAt(val.position);
                                 currNode.open = true;
                                 stack.push(nodeAt(tmp[i]));
@@ -464,18 +530,17 @@ async function dfs() {
                         }
                     }
                 }
-
             }
         }
     }
     console.log("ENDED LOOP");
-    while(val.parent != null){
+    while (val.parent != null) {
         PATH.push(findDirection(val, val.parent));
         val = val.parent;
     }
 }
 async function bfs() {
-    currAlgo = searchAlgo.BFS
+    currAlgo = searchAlgo.BFS;
 
     visited = [];
 
@@ -484,7 +549,6 @@ async function bfs() {
 
         for (let j = 0; j < ySize; j++) {
             temp.push(false);
-
         }
 
         visited.push(temp);
@@ -498,36 +562,38 @@ async function bfs() {
         val = stack.shift();
         val.closed = true;
 
-        
         if (arr[val.position[0]][val.position[1]] != 1) {
             if (visited[val.position[0]][val.position[1]] == false) {
-                if (val.position[0] == berry.location[0] && val.position[1] == berry.location[1]) {
-
+                if (
+                    val.position[0] == berry.location[0] &&
+                    val.position[1] == berry.location[1]
+                ) {
                     let curr = nodeAt(val.position);
                     while (curr.parent != null) {
                         PATH.push(findDirection(curr, curr.parent));
                         curr = curr.parent;
                     }
-                
+
                     return;
                 }
                 visited[val.position[0]][val.position[1]] = true;
                 if (first) {
                     first = false;
-                    tmp = getAdjValuesDIR(val.position[0], val.position[1], prevDirection);
-                }
-                else {
+                    tmp = getAdjValuesDIR(
+                        val.position[0],
+                        val.position[1],
+                        prevDirection
+                    );
+                } else {
                     tmp = getAdjValues(val.position[0], val.position[1]);
                 }
                 for (let i = 0; i < tmp.length; i++) {
-
                     if (stack.length <= 10000) {
                         if (arr[tmp[i][0]][tmp[i][1]] != 1) {
                             var currNode = nodeAt(tmp[i]);
                             if (currNode.open || currNode.closed) {
                                 let a_ = 0;
-                            }
-                            else {
+                            } else {
                                 currNode.parent = nodeAt(val.position);
                                 currNode.open = true;
                                 stack.push(nodeAt(tmp[i]));
@@ -535,64 +601,70 @@ async function bfs() {
                         }
                     }
                 }
-
             }
-
         }
-
     }
     console.log(val);
-    while(val.parent != null){
+    while (val.parent != null) {
         console.log("Not null");
         PATH.push(findDirection(val, val.parent));
         val = val.parent;
     }
 }
 
-document.getElementById('dfs').addEventListener('click', () => {
+document.getElementById("dfs").addEventListener("click", () => {
     if (BEGIN) {
-
         TAKEINPUT = false;
         BEGIN = false;
         dfs();
         started = true;
-        INTERVAL = setInterval(() => { update() }, SNAKE_SPEED);
+        INTERVAL = setInterval(() => {
+            update();
+        }, SNAKE_SPEED);
     }
-})
-document.getElementById('AS').addEventListener('click', () => {
+});
+document.getElementById("AS").addEventListener("click", () => {
     if (BEGIN) {
-
         TAKEINPUT = false;
         BEGIN = false;
         astar();
         started = true;
-        INTERVAL = setInterval(() => { update() }, SNAKE_SPEED);
+        INTERVAL = setInterval(() => {
+            update();
+        }, SNAKE_SPEED);
     }
-})
-document.getElementById('bfs').addEventListener('click', () => {
+});
+document.getElementById("bfs").addEventListener("click", () => {
     if (BEGIN) {
-
         TAKEINPUT = false;
         BEGIN = false;
         bfs();
         started = true;
-        INTERVAL = setInterval(() => { update() }, SNAKE_SPEED);
+        INTERVAL = setInterval(() => {
+            update();
+        }, SNAKE_SPEED);
     }
 });
 let THIS_EATEN_BERRY = true;
 let index = PATH.length - 1;
 let prevSnake = snake.body;
+
 function update() {
     if (TAKEINPUT) {
         if (currDirection == Direction.NONE) {
-            let resultupdate = snake.updateUsingDirection(prevDirection, EATEN_BERRY);
+            let resultupdate = snake.updateUsingDirection(
+                prevDirection,
+                EATEN_BERRY
+            );
             if (!resultupdate) {
                 renderLose();
                 clearInterval(INTERVAL);
             }
-        }
-        else {
-            let resultupdate = snake.updateUsingDirection(currDirection, EATEN_BERRY);
+        } else {
+            let resultupdate = snake.updateUsingDirection(
+                currDirection,
+                EATEN_BERRY
+            );
             if (!resultupdate) {
                 renderLose();
                 clearInterval(INTERVAL);
@@ -600,13 +672,15 @@ function update() {
             prevDirection = currDirection;
             currDirection = Direction.NONE;
         }
-    }
-    else {
-        if(index < 0){
+    } else {
+        if (index < 0) {
             index = PATH.length - 1;
         }
 
-        let resultupdate = snake.updateUsingDirection(PATH[index], THIS_EATEN_BERRY);
+        let resultupdate = snake.updateUsingDirection(
+            PATH[index],
+            THIS_EATEN_BERRY
+        );
         THIS_EATEN_BERRY = true;
         if (!resultupdate) {
             renderLose();
@@ -614,44 +688,39 @@ function update() {
         }
 
         if (index == 0) {
-
             prevDirection = PATH[0];
             PATH = [];
             checkIfBerryGone();
             THIS_EATEN_BERRY = false;
             grid = [];
             grid = [...createGrid()];
-            if(snake.body.length > 0){
+            if (snake.body.length > 0) {
                 prevSnake = [...snake.body];
             }
-            if(currAlgo == searchAlgo.BFS){
+            if (currAlgo == searchAlgo.BFS) {
                 bfs();
-            }
-            else if(currAlgo == searchAlgo.DFS){
+            } else if (currAlgo == searchAlgo.DFS) {
                 dfs();
-            }
-            else if(currAlgo == searchAlgo.ASTAR){
+            } else if (currAlgo == searchAlgo.ASTAR) {
                 astar();
             }
-            if(PATH.length == 0){
+            if (PATH.length == 0) {
                 clearInterval(INTERVAL);
-                drawSq(prevSnake[prevSnake.length-1][0], prevSnake[prevSnake.length-1][1], 5);
+                drawSq(
+                    prevSnake[prevSnake.length - 1][0],
+                    prevSnake[prevSnake.length - 1][1],
+                    5
+                );
                 renderLose();
             }
             index = PATH.length - 1;
-            
-        }
-        else{
+        } else {
             index -= 1;
         }
 
         snake.checkIfDead();
-
     }
     EATEN_BERRY = true;
     checkIfBerryGone();
     snake.checkIfDead();
-
-
 }
-
