@@ -1,6 +1,6 @@
 function Snake(interval){
     this.INTERVAL = interval;
-    this.body = [[0,0], [1,0], [2, 0], [3, 0], [4,0]];
+    this.body = [[0,0], [1,0]];
     this.checkIfDead = function(){
         for(let i = 0; i < this.body.length; i ++){
             for(let j = i+1; j < this.body.length; j ++){

@@ -5,4 +5,5 @@ function Node(pos) {
     this.closed = false;
     this.parent = null;
     this.open = false;
+    this.seen = false;
 }

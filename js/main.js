@@ -148,7 +148,7 @@ const starter = {
     score: "5",
 };
 
-let SCORE = 5;
+let SCORE = 2;
 let SNAKE_SPEED = parseInt(document.getElementById("speed").value);
 document.getElementById("speed").addEventListener("change", (e) => {
     SNAKE_SPEED = parseInt(document.getElementById("speed").value);
@@ -347,6 +347,33 @@ function getAdjValues(i, j) {
 
     return actualRes;
 }
+function getAdjValuesH(i, j) {
+    let res = [
+        [i, j - 1],
+        [i + 1, j],
+        [i, j + 1],
+        [i - 1, j],
+    ];
+    let actualRes = [];
+    for (let i = 0; i < res.length; i++) {
+        if (
+            res[i][0] >= 0 &&
+            res[i][0] < xSize &&
+            res[i][1] >= 0 &&
+            res[i][1] < ySize
+        ) {
+            if (arr[res[i][0]][res[i][1]] != 1) {
+                var push = true;
+
+                if (push) {
+                    actualRes.push(res[i]);
+                }
+            }
+        }
+    }
+
+    return actualRes;
+}
 var getAdjValuesDIR = (i, j, dir) => {
     let res = [
         [i, j - 1],
@@ -391,6 +418,43 @@ var getAdjValuesDIR = (i, j, dir) => {
 
     return actualRes;
 };
+var getAdjValuesHDIR = (i, j, dir) => {
+    let res = [
+        [i, j - 1],
+        [i + 1, j],
+        [i, j + 1],
+        [i - 1, j],
+    ];
+    if (dir == Direction.RIGHT) {
+        res.splice(3, 1);
+    }
+    if (dir == Direction.LEFT) {
+        res.splice(1, 1);
+    }
+    if (dir == Direction.UP) {
+        res.splice(2, 1);
+    }
+    if (dir == Direction.DOWN) {
+        res.splice(0, 1);
+    }
+    let actualRes = [];
+    for (let i = 0; i < res.length; i++) {
+        if (
+            res[i][0] >= 0 &&
+            res[i][0] < xSize &&
+            res[i][1] >= 0 &&
+            res[i][1] < ySize
+        ) {
+            var push = true;
+
+            if (push) {
+                actualRes.push(res[i]);
+            }
+        }
+    }
+
+    return actualRes;
+};
 var findDirection = (a, b) => {
     if (a.position[0] > b.position[0]) {
         return Direction.RIGHT;
@@ -413,23 +477,13 @@ const searchAlgo = {
 };
 let PATH = [];
 let shortestPath;
-async function hamiltonian(head, tail) {
-
-    let HEAD = nodeAt(head);
-    let TAIL = nodeAt(tail);
-    currAlgo = searchAlgo.HAMILTONIAN;
-    a = bfs(snake.body[0]);
-    PATH = [];
-    console.log(a);
-    for(let i = 0; i < shortestPath.length; i ++){
-        drawSq(shortestPath[i].position[0], shortestPath[i].position[1], 5)
-    }
-}
-async function astar() {
+async function astarH(location) {
     currAlgo = searchAlgo.ASTAR;
     open = new Heap((a, b) => a.f - b.f);
 
     let startNode = nodeAt(snake.body[snake.body.length - 1]);
+    console.log(startNode);
+    console.log(nodeAt(location));
     startNode.f = 0;
     startNode.g = 0;
     startNode.open = true;
@@ -438,15 +492,220 @@ async function astar() {
     while (!open.empty()) {
         q = open.pop();
         q.closed = true;
-        if (
-            q.position[0] == berry.location[0] &&
-            q.position[1] == berry.location[1]
-        ) {
+        if (q.position[0] == location[0] && q.position[1] == location[1]) {
             let curr = nodeAt(q.position);
+            shortestPath = [];
             while (curr.parent != null) {
+                shortestPath.unshift(curr);
                 PATH.push(findDirection(curr, curr.parent));
                 curr = curr.parent;
             }
+            shortestPath.unshift(curr);
+            return;
+        }
+        let neighbors;
+        if (first) {
+            first = false;
+            neighbors = getAdjValuesHDIR(
+                q.position[0],
+                q.position[1],
+                prevDirection
+            );
+        } else {
+            neighbors = getAdjValuesH(q.position[0], q.position[1]);
+        }
+        for (let i = 0; i < neighbors.length; i++) {
+            var cNode = nodeAt(neighbors[i]);
+            if (cNode.closed) {
+                continue;
+            }
+            nodeG = q.g + 1;
+
+            if (!cNode.open || nodeG < cNode.g) {
+                cNode.g = nodeG;
+                let hVal = manhattan(cNode.position, end);
+                cNode.f = hVal + cNode.g;
+                cNode.parent = q;
+                if (!cNode.open) {
+                    open.push(nodeAt(neighbors[i]));
+                    cNode.open = true;
+                } else {
+                    open.updateItem(cNode);
+                }
+            }
+        }
+    }
+    console.log("ENDED LOOP");
+    shortestPath = [];
+    while (q.parent != null) {
+        shortestPath.unshift(q);
+        PATH.push(findDirection(q, q.parent));
+        q = q.parent;
+    }
+    shortestPath.unshift(q);
+}
+const hasAdjNodes = (a, b) => {
+    if (a.position[0] > b.position[0]) {
+        //a is on top of b, the path goes from A to B.
+        try {
+            if (
+                grid[a.position[0] - 1][a.position[1]] &&
+                grid[a.position[0] - 1][a.position[1] + 1]
+            ) {
+                if (
+                    !grid[a.position[0] - 1][a.position[1]].seen &&
+                    !grid[a.position[0] - 1][a.position[1] + 1].seen
+                ) {
+                    grid[a.position[0] - 1][a.position[1]].seen = true;
+                    grid[a.position[0] - 1][a.position[1] + 1].seen = true;
+                    return [
+                        grid[a.position[0] - 1][a.position[1]],
+                        grid[a.position[0] - 1][a.position[1] + 1],
+                    ];
+                }
+            }
+        } catch (error) {}
+        try {
+            if (
+                grid[a.position[0] + 1][a.position[1]] &&
+                grid[a.position[0] + 1][a.position[1] + 1]
+            ) {
+                if (
+                    !grid[a.position[0] + 1][a.position[1]].seen &&
+                    !grid[a.position[0] + 1][a.position[1] + 1].seen
+                ) {
+                    grid[a.position[0] + 1][a.position[1]].seen = true;
+                    grid[a.position[0] + 1][a.position[1] + 1].seen = true;
+                    return [
+                        grid[a.position[0] + 1][a.position[1]],
+                        grid[a.position[0] + 1][a.position[1] + 1],
+                    ];
+                }
+            }
+        } catch (error) {}
+    }
+    if (a.position[0] < b.position[0]) {
+        //a is below b, the path goes from A to B. --going up
+        try {
+            if (
+                grid[a.position[0] + 1][a.position[1]] &&
+                grid[a.position[0] + 1][a.position[1] - 1]
+            ) {
+                if (
+                    !grid[a.position[0] - 1][a.position[1]].seen &&
+                    !grid[a.position[0] - 1][a.position[1] - 1].seen
+                ) {
+                    grid[a.position[0] - 1][a.position[1]].seen = true;
+                    grid[a.position[0] - 1][a.position[1] - 1].seen = true;
+                    return [
+                        grid[a.position[0] - 1][a.position[1]],
+                        grid[a.position[0] - 1][a.position[1] - 1],
+                    ];
+                }
+            }
+        } catch (error) {}
+        try {
+            if (
+                grid[a.position[0] + 1][a.position[1]] &&
+                grid[a.position[0] + 1][a.position[1] + 1]
+            ) {
+                if (
+                    !grid[a.position[0] + 1][a.position[1]].seen &&
+                    !grid[a.position[0] + 1][a.position[1] - 1].seen
+                ) {
+                    grid[a.position[0] + 1][a.position[1]].seen = true;
+                    grid[a.position[0] + 1][a.position[1] - 1].seen = true;
+                    return [
+                        grid[a.position[0] + 1][a.position[1]],
+                        grid[a.position[0] + 1][a.position[1] - 1],
+                    ];
+                }
+            }
+        } catch (error) {}
+    }
+        if (a.position[1] > b.position[1]) {
+            //a is to the right of b, the path goes from A to B.
+            try {
+                return [
+                    grid[a.position[0]][a.position[1] + 1],
+                    grid[a.position[0] - 1][a.position[1] + 1],
+                ];
+            } catch (error) {}
+            try {
+                return [
+                    grid[a.position[0]][a.position[1] - 1],
+                    grid[a.position[0] - 1][a.position[1] - 1],
+                ];
+            } catch (error) {}
+        }
+    }
+    if (a.position[1] < b.position[1]) {
+        //a is to the left of b, the path goes from A to B. --going up
+        try {
+            return [
+                grid[a.position[0]][a.position[1] + 1],
+                grid[a.position[0] + 1][a.position[1] + 1],
+            ];
+        } catch (error) {}
+        try {
+            return [
+                grid[a.position[0]][a.position[1] - 1],
+                grid[a.position[0] + 1][a.position[1] - 1],
+            ];
+        } catch (error) {}
+    }
+    return null;
+};
+async function hamiltonian(head, tail) {
+    let HEAD = nodeAt(head);
+    let TAIL = nodeAt(tail);
+    console.log(TAIL);
+    let a;
+    astarH(TAIL.position);
+    console.log(TAIL);
+    currAlgo = searchAlgo.HAMILTONIAN;
+    PATH = [];
+    //console.log(shortestPath);
+    for (let i = 0; i < shortestPath.length; i++) {
+        drawSq(shortestPath[i].position[0], shortestPath[i].position[1], 5);
+    }
+    let index = 1;
+    while (index < shortestPath.length) {
+        let adjNodes = hasAdjNodes(
+            shortestPath[index - 1],
+            shortestPath[index]
+        );
+        if (adjNodes) {
+            shortestPath.splice(index, 0, adjNodes[0], adjNodes[1]);
+            index = 1;
+        }
+        index++;
+    }
+}
+async function astar(location) {
+    currAlgo = searchAlgo.ASTAR;
+    open = new Heap((a, b) => a.f - b.f);
+
+    let startNode = nodeAt(snake.body[snake.body.length - 1]);
+    console.log(startNode);
+    console.log(nodeAt(location));
+    startNode.f = 0;
+    startNode.g = 0;
+    startNode.open = true;
+    open.push(startNode);
+    let first = true;
+    while (!open.empty()) {
+        q = open.pop();
+        q.closed = true;
+        if (q.position[0] == location[0] && q.position[1] == location[1]) {
+            let curr = nodeAt(q.position);
+            shortestPath = [];
+            while (curr.parent != null) {
+                shortestPath.unshift(curr);
+                PATH.push(findDirection(curr, curr.parent));
+                curr = curr.parent;
+            }
+            shortestPath.unshift(curr);
             return;
         }
         let neighbors;
@@ -482,10 +741,13 @@ async function astar() {
         }
     }
     console.log("ENDED LOOP");
+    shortestPath = [];
     while (q.parent != null) {
+        shortestPath.unshift(q);
         PATH.push(findDirection(q, q.parent));
         q = q.parent;
     }
+    shortestPath.unshift(q);
 }
 async function dfs() {
     currAlgo = searchAlgo.DFS;
@@ -647,7 +909,7 @@ document.getElementById("AS").addEventListener("click", () => {
     if (BEGIN) {
         TAKEINPUT = false;
         BEGIN = false;
-        astar();
+        astar(berry.location);
         started = true;
         INTERVAL = setInterval(() => {
             update();
@@ -671,9 +933,9 @@ document.getElementById("ham").addEventListener("click", () => {
         BEGIN = false;
         hamiltonian(snake.body[snake.body.length - 1], snake.body[0]);
         started = true;
-        //INTERVAL = setInterval(() => {
-        //    update();
-        //}, SNAKE_SPEED);
+        /*INTERVAL = setInterval(() => {
+            update();
+        }, SNAKE_SPEED);*/
     }
 });
 let THIS_EATEN_BERRY = true;
@@ -733,7 +995,7 @@ function update() {
             } else if (currAlgo == searchAlgo.DFS) {
                 dfs();
             } else if (currAlgo == searchAlgo.ASTAR) {
-                astar();
+                astar(berry.location);
             } else if (currAlgo == searchAlgo.HAMILTONIAN) {
                 hamiltonian(snake.body[snake.body.length - 1], snake.body[0]);
             }
