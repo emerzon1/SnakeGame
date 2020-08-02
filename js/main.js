@@ -8,7 +8,7 @@ const color = [
     "white",
 ];
 /* TODO ==> 
-   USE MongoDB to store scores
+   Setup LONGEST PATH --> hamiltonian cycle
 */
 
 arr = [];
@@ -409,8 +409,22 @@ const searchAlgo = {
     ASTAR: 0,
     DFS: 1,
     BFS: 2,
+    HAMILTONIAN: 3,
 };
 let PATH = [];
+let shortestPath;
+async function hamiltonian(head, tail) {
+
+    let HEAD = nodeAt(head);
+    let TAIL = nodeAt(tail);
+    currAlgo = searchAlgo.HAMILTONIAN;
+    a = bfs(snake.body[0]);
+    PATH = [];
+    console.log(a);
+    for(let i = 0; i < shortestPath.length; i ++){
+        drawSq(shortestPath[i].position[0], shortestPath[i].position[1], 5)
+    }
+}
 async function astar() {
     currAlgo = searchAlgo.ASTAR;
     open = new Heap((a, b) => a.f - b.f);
@@ -539,7 +553,7 @@ async function dfs() {
         val = val.parent;
     }
 }
-async function bfs() {
+async function bfs(location) {
     currAlgo = searchAlgo.BFS;
 
     visited = [];
@@ -565,16 +579,18 @@ async function bfs() {
         if (arr[val.position[0]][val.position[1]] != 1) {
             if (visited[val.position[0]][val.position[1]] == false) {
                 if (
-                    val.position[0] == berry.location[0] &&
-                    val.position[1] == berry.location[1]
+                    val.position[0] == location[0] &&
+                    val.position[1] == location[1]
                 ) {
                     let curr = nodeAt(val.position);
+                    shortestPath = [];
                     while (curr.parent != null) {
+                        shortestPath.unshift(curr);
                         PATH.push(findDirection(curr, curr.parent));
                         curr = curr.parent;
                     }
-
-                    return;
+                    shortestPath.unshift(curr);
+                    return shortestPath;
                 }
                 visited[val.position[0]][val.position[1]] = true;
                 if (first) {
@@ -605,11 +621,15 @@ async function bfs() {
         }
     }
     console.log(val);
+    shortestPath = [];
     while (val.parent != null) {
         console.log("Not null");
+        shortestPath.unshift(val);
         PATH.push(findDirection(val, val.parent));
         val = val.parent;
     }
+    shortestPath.unshift(val);
+    return shortestPath;
 }
 
 document.getElementById("dfs").addEventListener("click", () => {
@@ -638,11 +658,22 @@ document.getElementById("bfs").addEventListener("click", () => {
     if (BEGIN) {
         TAKEINPUT = false;
         BEGIN = false;
-        bfs();
+        bfs(berry.location);
         started = true;
         INTERVAL = setInterval(() => {
             update();
         }, SNAKE_SPEED);
+    }
+});
+document.getElementById("ham").addEventListener("click", () => {
+    if (BEGIN) {
+        TAKEINPUT = false;
+        BEGIN = false;
+        hamiltonian(snake.body[snake.body.length - 1], snake.body[0]);
+        started = true;
+        //INTERVAL = setInterval(() => {
+        //    update();
+        //}, SNAKE_SPEED);
     }
 });
 let THIS_EATEN_BERRY = true;
@@ -698,11 +729,13 @@ function update() {
                 prevSnake = [...snake.body];
             }
             if (currAlgo == searchAlgo.BFS) {
-                bfs();
+                bfs(berry.location);
             } else if (currAlgo == searchAlgo.DFS) {
                 dfs();
             } else if (currAlgo == searchAlgo.ASTAR) {
                 astar();
+            } else if (currAlgo == searchAlgo.HAMILTONIAN) {
+                hamiltonian(snake.body[snake.body.length - 1], snake.body[0]);
             }
             if (PATH.length == 0) {
                 clearInterval(INTERVAL);
