@@ -10,7 +10,7 @@ const color = [
 /* TODO ==> 
    Setup LONGEST PATH --> hamiltonian cycle
 */
-
+let THIS_EATEN_BERRY = true;
 arr = [];
 let TAKEINPUT = true;
 let WIDTH = Math.min(
@@ -92,7 +92,7 @@ document.getElementById("reset").addEventListener("click", () => {
     location.reload();
 });
 
-function delay(a) {
+async function delay(a) {
     return new Promise((resolve) => {
         setTimeout(() => {
             resolve();
@@ -247,6 +247,7 @@ function checkIfBerryGone() {
         document.getElementById("score").textContent = SCORE;
         berry.drawBerry();
         EATEN_BERRY = false;
+        THIS_EATEN_BERRY = false;
     }
 }
 
@@ -497,9 +498,11 @@ async function astarH(location) {
             shortestPath = [];
             while (curr.parent != null) {
                 shortestPath.unshift(curr);
+                curr.seen = true;
                 PATH.push(findDirection(curr, curr.parent));
                 curr = curr.parent;
             }
+            curr.seen = true;
             shortestPath.unshift(curr);
             return;
         }
@@ -538,15 +541,56 @@ async function astarH(location) {
     console.log("ENDED LOOP");
     shortestPath = [];
     while (q.parent != null) {
+        q.seen = true;
         shortestPath.unshift(q);
         PATH.push(findDirection(q, q.parent));
         q = q.parent;
     }
+    q.seen = true;
     shortestPath.unshift(q);
 }
 const hasAdjNodes = (a, b) => {
-    if (a.position[0] > b.position[0]) {
-        //a is on top of b, the path goes from A to B.
+    if (a.position[1] > b.position[1]) {
+        //a is below of b, the path goes from A to B.
+        try {
+            if (
+                grid[a.position[0] - 1][a.position[1]] &&
+                grid[a.position[0] - 1][a.position[1] - 1]
+            ) {
+                if (
+                    !grid[a.position[0] - 1][a.position[1]].seen &&
+                    !grid[a.position[0] - 1][a.position[1] - 1].seen
+                ) {
+                    grid[a.position[0] - 1][a.position[1]].seen = true;
+                    grid[a.position[0] - 1][a.position[1] - 1].seen = true;
+                    return [
+                        grid[a.position[0] - 1][a.position[1]],
+                        grid[a.position[0] - 1][a.position[1] - 1],
+                    ];
+                }
+            }
+        } catch (error) {}
+        try {
+            if (
+                grid[a.position[0] + 1][a.position[1]] &&
+                grid[a.position[0] + 1][a.position[1] - 1]
+            ) {
+                if (
+                    !grid[a.position[0] + 1][a.position[1]].seen &&
+                    !grid[a.position[0] + 1][a.position[1] - 1].seen
+                ) {
+                    grid[a.position[0] + 1][a.position[1]].seen = true;
+                    grid[a.position[0] + 1][a.position[1] - 1].seen = true;
+                    return [
+                        grid[a.position[0] + 1][a.position[1]],
+                        grid[a.position[0] + 1][a.position[1] - 1],
+                    ];
+                }
+            }
+        } catch (error) {}
+    }
+    else if (a.position[1] < b.position[1]) {
+        //a is on top of b, the path goes from A to B. --going up
         try {
             if (
                 grid[a.position[0] - 1][a.position[1]] &&
@@ -584,46 +628,7 @@ const hasAdjNodes = (a, b) => {
             }
         } catch (error) {}
     }
-    if (a.position[0] < b.position[0]) {
-        //a is below b, the path goes from A to B. --going up
-        try {
-            if (
-                grid[a.position[0] + 1][a.position[1]] &&
-                grid[a.position[0] + 1][a.position[1] - 1]
-            ) {
-                if (
-                    !grid[a.position[0] - 1][a.position[1]].seen &&
-                    !grid[a.position[0] - 1][a.position[1] - 1].seen
-                ) {
-                    grid[a.position[0] - 1][a.position[1]].seen = true;
-                    grid[a.position[0] - 1][a.position[1] - 1].seen = true;
-                    return [
-                        grid[a.position[0] - 1][a.position[1]],
-                        grid[a.position[0] - 1][a.position[1] - 1],
-                    ];
-                }
-            }
-        } catch (error) {}
-        try {
-            if (
-                grid[a.position[0] + 1][a.position[1]] &&
-                grid[a.position[0] + 1][a.position[1] + 1]
-            ) {
-                if (
-                    !grid[a.position[0] + 1][a.position[1]].seen &&
-                    !grid[a.position[0] + 1][a.position[1] - 1].seen
-                ) {
-                    grid[a.position[0] + 1][a.position[1]].seen = true;
-                    grid[a.position[0] + 1][a.position[1] - 1].seen = true;
-                    return [
-                        grid[a.position[0] + 1][a.position[1]],
-                        grid[a.position[0] + 1][a.position[1] - 1],
-                    ];
-                }
-            }
-        } catch (error) {}
-    }
-    if (a.position[1] > b.position[1]) {
+    else if (a.position[0] > b.position[0]) {
         //a is to the right of b, the path goes from A to B.
         try {
             if (
@@ -634,7 +639,7 @@ const hasAdjNodes = (a, b) => {
                     !grid[a.position[0]][a.position[1] + 1].seen &&
                     !grid[a.position[0] - 1][a.position[1] + 1].seen
                 ) {
-                    grid[a.position[0][a.position[1] + 1].seen = true;
+                    grid[a.position[0]][a.position[1] + 1].seen = true;
                     grid[a.position[0] - 1][a.position[1] + 1].seen = true;
                     return [
                         grid[a.position[0]][a.position[1] + 1],
@@ -662,74 +667,43 @@ const hasAdjNodes = (a, b) => {
             }
         } catch (error) {}
     }
-    if (a.position[1] < b.position[1]) {
+    else if (a.position[0] < b.position[0]) {
         //a is below b, the path goes from A to B. --going up
         try {
             if (
-                grid[a.position[0] + 1][a.position[1]] &&
-                grid[a.position[0] + 1][a.position[1] - 1]
+                grid[a.position[0]][a.position[1] + 1] &&
+                grid[a.position[0] + 1][a.position[1] + 1]
             ) {
                 if (
-                    !grid[a.position[0] - 1][a.position[1]].seen &&
-                    !grid[a.position[0] - 1][a.position[1] - 1].seen
+                    !grid[a.position[0]][a.position[1] + 1].seen &&
+                    !grid[a.position[0] + 1][a.position[1] + 1].seen
                 ) {
-                    grid[a.position[0] - 1][a.position[1]].seen = true;
-                    grid[a.position[0] - 1][a.position[1] - 1].seen = true;
+                    grid[a.position[0]][a.position[1] + 1].seen = true;
+                    grid[a.position[0] + 1][a.position[1] + 1].seen = true;
                     return [
-                        grid[a.position[0] - 1][a.position[1]],
-                        grid[a.position[0] - 1][a.position[1] - 1],
+                        grid[a.position[0]][a.position[1] + 1],
+                        grid[a.position[0] + 1][a.position[1] + 1],
                     ];
                 }
             }
         } catch (error) {}
         try {
             if (
-                grid[a.position[0] + 1][a.position[1]] &&
-                grid[a.position[0] + 1][a.position[1] + 1]
+                grid[a.position[0]][a.position[1] - 1] &&
+                grid[a.position[0] + 1][a.position[1] - 1]
             ) {
                 if (
-                    !grid[a.position[0] + 1][a.position[1]].seen &&
+                    !grid[a.position[0]][a.position[1] - 1].seen &&
                     !grid[a.position[0] + 1][a.position[1] - 1].seen
                 ) {
-                    grid[a.position[0] + 1][a.position[1]].seen = true;
+                    grid[a.position[0]][a.position[1] - 1].seen = true;
                     grid[a.position[0] + 1][a.position[1] - 1].seen = true;
                     return [
-                        grid[a.position[0] + 1][a.position[1]],
+                        grid[a.position[0]][a.position[1] - 1],
                         grid[a.position[0] + 1][a.position[1] - 1],
                     ];
                 }
             }
-        } catch (error) {}
-    }
-    if (a.position[1] > b.position[1]) {
-        //a is to the right of b, the path goes from A to B.
-        try {
-            return [
-                grid[a.position[0]][a.position[1] + 1],
-                grid[a.position[0] - 1][a.position[1] + 1],
-            ];
-        } catch (error) {}
-        try {
-            return [
-                grid[a.position[0]][a.position[1] - 1],
-                grid[a.position[0] - 1][a.position[1] - 1],
-            ];
-        } catch (error) {}
-    }
-
-    if (a.position[1] < b.position[1]) {
-        //a is to the left of b, the path goes from A to B. --going up
-        try {
-            return [
-                grid[a.position[0]][a.position[1] + 1],
-                grid[a.position[0] + 1][a.position[1] + 1],
-            ];
-        } catch (error) {}
-        try {
-            return [
-                grid[a.position[0]][a.position[1] - 1],
-                grid[a.position[0] + 1][a.position[1] - 1],
-            ];
         } catch (error) {}
     }
     return null;
@@ -744,9 +718,7 @@ async function hamiltonian(head, tail) {
     currAlgo = searchAlgo.HAMILTONIAN;
     PATH = [];
     //console.log(shortestPath);
-    for (let i = 0; i < shortestPath.length; i++) {
-        drawSq(shortestPath[i].position[0], shortestPath[i].position[1], 5);
-    }
+    
     let index = 1;
     while (index < shortestPath.length) {
         let adjNodes = hasAdjNodes(
@@ -755,9 +727,13 @@ async function hamiltonian(head, tail) {
         );
         if (adjNodes) {
             shortestPath.splice(index, 0, adjNodes[0], adjNodes[1]);
-            index = 1;
+            index = 0;
         }
         index++;
+    } 
+    for(let i = 1; i < shortestPath.length;  i++){
+
+        PATH.push(findDirection(shortestPath[i-1], shortestPath[i]));
     }
 }
 async function astar(location) {
@@ -1009,14 +985,14 @@ document.getElementById("ham").addEventListener("click", () => {
     if (BEGIN) {
         TAKEINPUT = false;
         BEGIN = false;
-        hamiltonian(snake.body[snake.body.length - 1], snake.body[0]);
+        hamiltonian([1, 0], [0,0]);
         started = true;
-        /*INTERVAL = setInterval(() => {
+        INTERVAL = setInterval(() => {
             update();
-        }, SNAKE_SPEED);*/
+        }, SNAKE_SPEED);
     }
 });
-let THIS_EATEN_BERRY = true;
+
 let index = PATH.length - 1;
 let prevSnake = snake.body;
 
@@ -1047,13 +1023,13 @@ function update() {
         if (index < 0) {
             index = PATH.length - 1;
         }
-
         let resultupdate = snake.updateUsingDirection(
             PATH[index],
             THIS_EATEN_BERRY
         );
         THIS_EATEN_BERRY = true;
         if (!resultupdate) {
+            console.log(PATH[index]);
             renderLose();
             clearInterval(INTERVAL);
         }
@@ -1062,7 +1038,6 @@ function update() {
             prevDirection = PATH[0];
             PATH = [];
             checkIfBerryGone();
-            THIS_EATEN_BERRY = false;
             grid = [];
             grid = [...createGrid()];
             if (snake.body.length > 0) {
