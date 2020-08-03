@@ -623,22 +623,100 @@ const hasAdjNodes = (a, b) => {
             }
         } catch (error) {}
     }
-        if (a.position[1] > b.position[1]) {
-            //a is to the right of b, the path goes from A to B.
-            try {
-                return [
-                    grid[a.position[0]][a.position[1] + 1],
-                    grid[a.position[0] - 1][a.position[1] + 1],
-                ];
-            } catch (error) {}
-            try {
-                return [
-                    grid[a.position[0]][a.position[1] - 1],
-                    grid[a.position[0] - 1][a.position[1] - 1],
-                ];
-            } catch (error) {}
-        }
+    if (a.position[1] > b.position[1]) {
+        //a is to the right of b, the path goes from A to B.
+        try {
+            if (
+                grid[a.position[0]][a.position[1] + 1] &&
+                grid[a.position[0] - 1][a.position[1] + 1]
+            ) {
+                if (
+                    !grid[a.position[0]][a.position[1] + 1].seen &&
+                    !grid[a.position[0] - 1][a.position[1] + 1].seen
+                ) {
+                    grid[a.position[0][a.position[1] + 1].seen = true;
+                    grid[a.position[0] - 1][a.position[1] + 1].seen = true;
+                    return [
+                        grid[a.position[0]][a.position[1] + 1],
+                        grid[a.position[0] - 1][a.position[1] + 1],
+                    ];
+                }
+            }
+        } catch (error) {}
+        try {
+            if (
+                grid[a.position[0]][a.position[1] - 1] &&
+                grid[a.position[0] - 1][a.position[1] - 1]
+            ) {
+                if (
+                    !grid[a.position[0]][a.position[1] - 1].seen &&
+                    !grid[a.position[0] - 1][a.position[1] - 1].seen
+                ) {
+                    grid[a.position[0]][a.position[1] - 1].seen = true;
+                    grid[a.position[0] - 1][a.position[1] - 1].seen = true;
+                    return [
+                        grid[a.position[0]][a.position[1] - 1],
+                        grid[a.position[0] - 1][a.position[1] - 1],
+                    ];
+                }
+            }
+        } catch (error) {}
     }
+    if (a.position[1] < b.position[1]) {
+        //a is below b, the path goes from A to B. --going up
+        try {
+            if (
+                grid[a.position[0] + 1][a.position[1]] &&
+                grid[a.position[0] + 1][a.position[1] - 1]
+            ) {
+                if (
+                    !grid[a.position[0] - 1][a.position[1]].seen &&
+                    !grid[a.position[0] - 1][a.position[1] - 1].seen
+                ) {
+                    grid[a.position[0] - 1][a.position[1]].seen = true;
+                    grid[a.position[0] - 1][a.position[1] - 1].seen = true;
+                    return [
+                        grid[a.position[0] - 1][a.position[1]],
+                        grid[a.position[0] - 1][a.position[1] - 1],
+                    ];
+                }
+            }
+        } catch (error) {}
+        try {
+            if (
+                grid[a.position[0] + 1][a.position[1]] &&
+                grid[a.position[0] + 1][a.position[1] + 1]
+            ) {
+                if (
+                    !grid[a.position[0] + 1][a.position[1]].seen &&
+                    !grid[a.position[0] + 1][a.position[1] - 1].seen
+                ) {
+                    grid[a.position[0] + 1][a.position[1]].seen = true;
+                    grid[a.position[0] + 1][a.position[1] - 1].seen = true;
+                    return [
+                        grid[a.position[0] + 1][a.position[1]],
+                        grid[a.position[0] + 1][a.position[1] - 1],
+                    ];
+                }
+            }
+        } catch (error) {}
+    }
+    if (a.position[1] > b.position[1]) {
+        //a is to the right of b, the path goes from A to B.
+        try {
+            return [
+                grid[a.position[0]][a.position[1] + 1],
+                grid[a.position[0] - 1][a.position[1] + 1],
+            ];
+        } catch (error) {}
+        try {
+            return [
+                grid[a.position[0]][a.position[1] - 1],
+                grid[a.position[0] - 1][a.position[1] - 1],
+            ];
+        } catch (error) {}
+    }
+
     if (a.position[1] < b.position[1]) {
         //a is to the left of b, the path goes from A to B. --going up
         try {
