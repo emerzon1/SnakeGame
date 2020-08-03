@@ -588,8 +588,7 @@ const hasAdjNodes = (a, b) => {
                 }
             }
         } catch (error) {}
-    }
-    else if (a.position[1] < b.position[1]) {
+    } else if (a.position[1] < b.position[1]) {
         //a is on top of b, the path goes from A to B. --going up
         try {
             if (
@@ -627,8 +626,7 @@ const hasAdjNodes = (a, b) => {
                 }
             }
         } catch (error) {}
-    }
-    else if (a.position[0] > b.position[0]) {
+    } else if (a.position[0] > b.position[0]) {
         //a is to the right of b, the path goes from A to B.
         try {
             if (
@@ -666,8 +664,7 @@ const hasAdjNodes = (a, b) => {
                 }
             }
         } catch (error) {}
-    }
-    else if (a.position[0] < b.position[0]) {
+    } else if (a.position[0] < b.position[0]) {
         //a is below b, the path goes from A to B. --going up
         try {
             if (
@@ -718,7 +715,7 @@ async function hamiltonian(head, tail) {
     currAlgo = searchAlgo.HAMILTONIAN;
     PATH = [];
     //console.log(shortestPath);
-    
+
     let index = 1;
     while (index < shortestPath.length) {
         let adjNodes = hasAdjNodes(
@@ -730,10 +727,9 @@ async function hamiltonian(head, tail) {
             index = 0;
         }
         index++;
-    } 
-    for(let i = 1; i < shortestPath.length;  i++){
-
-        PATH.push(findDirection(shortestPath[i-1], shortestPath[i]));
+    }
+    for (let i = 1; i < shortestPath.length; i++) {
+        PATH.push(findDirection(shortestPath[i - 1], shortestPath[i]));
     }
 }
 async function astar(location) {
@@ -985,7 +981,7 @@ document.getElementById("ham").addEventListener("click", () => {
     if (BEGIN) {
         TAKEINPUT = false;
         BEGIN = false;
-        hamiltonian([1, 0], [0,0]);
+        hamiltonian([1, 0], [0, 0]);
         started = true;
         INTERVAL = setInterval(() => {
             update();
@@ -1023,17 +1019,21 @@ function update() {
         if (index < 0) {
             index = PATH.length - 1;
         }
-        let resultupdate = snake.updateUsingDirection(
-            PATH[index],
-            THIS_EATEN_BERRY
-        );
-        THIS_EATEN_BERRY = true;
-        if (!resultupdate) {
-            console.log(PATH[index]);
-            renderLose();
-            clearInterval(INTERVAL);
+        if (currAlgo == searchAlgo.HAMILTONIAN) {
+            snake.updateUsingNode(shortestPath[index], THIS_EATEN_BERRY);
+            THIS_EATEN_BERRY = true;
+        } else {
+            let resultupdate = snake.updateUsingDirection(
+                PATH[index],
+                THIS_EATEN_BERRY
+            );
+            THIS_EATEN_BERRY = true;
+            if (!resultupdate) {
+                console.log(PATH[index]);
+                renderLose();
+                clearInterval(INTERVAL);
+            }
         }
-
         if (index == 0) {
             prevDirection = PATH[0];
             PATH = [];

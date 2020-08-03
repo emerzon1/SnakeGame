@@ -23,6 +23,14 @@ function Snake(interval){
         }
         render();
     }
+    this.updateUsingNode = function(node, bool){
+        if(bool){
+            let a = this.body.shift();
+            drawSq(a[0], a[1], 6);
+        }
+        this.body.push(node.position);
+        this.renderSnake();
+    }
     this.updateUsingDirection = function(direction, bool){
         if(bool){
             let a = this.body.shift();
