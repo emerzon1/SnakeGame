@@ -365,7 +365,14 @@ function getAdjValuesH(i, j) {
         ) {
             if (arr[res[i][0]][res[i][1]] != 1) {
                 var push = true;
-
+                for (let j = 1; j < snake.body.length-1; j++) {
+                    if (
+                        snake.body[j][0] == res[i][0] &&
+                        snake.body[j][1] == res[i][1]
+                    ) {
+                        push = false;
+                    }
+                }
                 if (push) {
                     actualRes.push(res[i]);
                 }
@@ -447,7 +454,14 @@ var getAdjValuesHDIR = (i, j, dir) => {
             res[i][1] < ySize
         ) {
             var push = true;
-
+            for (let j = 1; j < snake.body.length-1; j++) {
+                if (
+                    snake.body[j][0] == res[i][0] &&
+                    snake.body[j][1] == res[i][1]
+                ) {
+                    push = false;
+                }
+            }
             if (push) {
                 actualRes.push(res[i]);
             }
@@ -728,6 +742,7 @@ async function hamiltonian(head, tail) {
         }
         index++;
     }
+    shortestPath.unshift(TAIL);
     for (let i = 1; i < shortestPath.length; i++) {
         PATH.push(findDirection(shortestPath[i - 1], shortestPath[i]));
     }

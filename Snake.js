@@ -7,7 +7,7 @@ function Snake(interval){
                 if(this.body[i][0] == this.body[j][0] && this.body[i][1] == this.body[j][1]){
                     clearInterval(INTERVAL);
                     renderLose();
-                    
+                    console.log("OVERLAPPED!");
                     console.log("DEAD");
                     return false;
                 }
