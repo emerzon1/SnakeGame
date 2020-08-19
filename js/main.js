@@ -365,7 +365,7 @@ function getAdjValuesH(i, j) {
         ) {
             if (arr[res[i][0]][res[i][1]] != 1) {
                 var push = true;
-                for (let j = 1; j < snake.body.length-1; j++) {
+                for (let j = 1; j < snake.body.length - 1; j++) {
                     if (
                         snake.body[j][0] == res[i][0] &&
                         snake.body[j][1] == res[i][1]
@@ -454,7 +454,7 @@ var getAdjValuesHDIR = (i, j, dir) => {
             res[i][1] < ySize
         ) {
             var push = true;
-            for (let j = 1; j < snake.body.length-1; j++) {
+            for (let j = 1; j < snake.body.length - 1; j++) {
                 if (
                     snake.body[j][0] == res[i][0] &&
                     snake.body[j][1] == res[i][1]
@@ -497,8 +497,8 @@ async function astarH(location) {
     open = new Heap((a, b) => a.f - b.f);
 
     let startNode = nodeAt(snake.body[snake.body.length - 1]);
-    console.log(startNode);
-    console.log(nodeAt(location));
+    //console.log(startNode);
+    //console.log(nodeAt(location));
     startNode.f = 0;
     startNode.g = 0;
     startNode.open = true;
@@ -575,12 +575,32 @@ const hasAdjNodes = (a, b) => {
                     !grid[a.position[0] - 1][a.position[1]].seen &&
                     !grid[a.position[0] - 1][a.position[1] - 1].seen
                 ) {
-                    grid[a.position[0] - 1][a.position[1]].seen = true;
-                    grid[a.position[0] - 1][a.position[1] - 1].seen = true;
-                    return [
-                        grid[a.position[0] - 1][a.position[1]],
-                        grid[a.position[0] - 1][a.position[1] - 1],
-                    ];
+                    //ADD LOOPS TO CHECK IF IN BODY
+                    let ret = true;
+                    for (let i = 1; i < snake.body.length; i++) {
+                        if (
+                            a.position[0] - 1 == snake.body[i][0] &&
+                            a.position[1] == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                        if (
+                            a.position[0] - 1 == snake.body[i][0] &&
+                            a.position[1] - 1 == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                    }
+                    if (ret) {
+                        grid[a.position[0] - 1][a.position[1]].seen = true;
+                        grid[a.position[0] - 1][a.position[1] - 1].seen = true;
+                        return [
+                            grid[a.position[0] - 1][a.position[1]],
+                            grid[a.position[0] - 1][a.position[1] - 1],
+                        ];
+                    }
                 }
             }
         } catch (error) {}
@@ -593,12 +613,31 @@ const hasAdjNodes = (a, b) => {
                     !grid[a.position[0] + 1][a.position[1]].seen &&
                     !grid[a.position[0] + 1][a.position[1] - 1].seen
                 ) {
-                    grid[a.position[0] + 1][a.position[1]].seen = true;
-                    grid[a.position[0] + 1][a.position[1] - 1].seen = true;
-                    return [
-                        grid[a.position[0] + 1][a.position[1]],
-                        grid[a.position[0] + 1][a.position[1] - 1],
-                    ];
+                    let ret = true;
+                    for (let i = 1; i < snake.body.length; i++) {
+                        if (
+                            a.position[0] + 1 == snake.body[i][0] &&
+                            a.position[1] == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                        if (
+                            a.position[0] + 1 == snake.body[i][0] &&
+                            a.position[1] - 1 == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                    }
+                    if (ret) {
+                        grid[a.position[0] + 1][a.position[1]].seen = true;
+                        grid[a.position[0] + 1][a.position[1] - 1].seen = true;
+                        return [
+                            grid[a.position[0] + 1][a.position[1]],
+                            grid[a.position[0] + 1][a.position[1] - 1],
+                        ];
+                    }
                 }
             }
         } catch (error) {}
@@ -613,12 +652,31 @@ const hasAdjNodes = (a, b) => {
                     !grid[a.position[0] - 1][a.position[1]].seen &&
                     !grid[a.position[0] - 1][a.position[1] + 1].seen
                 ) {
-                    grid[a.position[0] - 1][a.position[1]].seen = true;
-                    grid[a.position[0] - 1][a.position[1] + 1].seen = true;
-                    return [
-                        grid[a.position[0] - 1][a.position[1]],
-                        grid[a.position[0] - 1][a.position[1] + 1],
-                    ];
+                    let ret = true;
+                    for (let i = 1; i < snake.body.length; i++) {
+                        if (
+                            a.position[0] - 1 == snake.body[i][0] &&
+                            a.position[1] == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                        if (
+                            a.position[0] - 1 == snake.body[i][0] &&
+                            a.position[1] + 1 == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                    }
+                    if (ret) {
+                        grid[a.position[0] - 1][a.position[1]].seen = true;
+                        grid[a.position[0] - 1][a.position[1] + 1].seen = true;
+                        return [
+                            grid[a.position[0] - 1][a.position[1]],
+                            grid[a.position[0] - 1][a.position[1] + 1],
+                        ];
+                    }
                 }
             }
         } catch (error) {}
@@ -631,12 +689,31 @@ const hasAdjNodes = (a, b) => {
                     !grid[a.position[0] + 1][a.position[1]].seen &&
                     !grid[a.position[0] + 1][a.position[1] + 1].seen
                 ) {
-                    grid[a.position[0] + 1][a.position[1]].seen = true;
-                    grid[a.position[0] + 1][a.position[1] + 1].seen = true;
-                    return [
-                        grid[a.position[0] + 1][a.position[1]],
-                        grid[a.position[0] + 1][a.position[1] + 1],
-                    ];
+                    let ret = true;
+                    for (let i = 1; i < snake.body.length; i++) {
+                        if (
+                            a.position[0] + 1 == snake.body[i][0] &&
+                            a.position[1] == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                        if (
+                            a.position[0] + 1 == snake.body[i][0] &&
+                            a.position[1] + 1 == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                    }
+                    if (ret) {
+                        grid[a.position[0] + 1][a.position[1]].seen = true;
+                        grid[a.position[0] + 1][a.position[1] + 1].seen = true;
+                        return [
+                            grid[a.position[0] + 1][a.position[1]],
+                            grid[a.position[0] + 1][a.position[1] + 1],
+                        ];
+                    }
                 }
             }
         } catch (error) {}
@@ -651,12 +728,31 @@ const hasAdjNodes = (a, b) => {
                     !grid[a.position[0]][a.position[1] + 1].seen &&
                     !grid[a.position[0] - 1][a.position[1] + 1].seen
                 ) {
-                    grid[a.position[0]][a.position[1] + 1].seen = true;
-                    grid[a.position[0] - 1][a.position[1] + 1].seen = true;
-                    return [
-                        grid[a.position[0]][a.position[1] + 1],
-                        grid[a.position[0] - 1][a.position[1] + 1],
-                    ];
+                    let ret = true;
+                    for (let i = 1; i < snake.body.length; i++) {
+                        if (
+                            a.position[0] == snake.body[i][0] &&
+                            a.position[1] + 1 == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                        if (
+                            a.position[0] - 1 == snake.body[i][0] &&
+                            a.position[1] + 1 == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                    }
+                    if (ret) {
+                        grid[a.position[0]][a.position[1] + 1].seen = true;
+                        grid[a.position[0] - 1][a.position[1] + 1].seen = true;
+                        return [
+                            grid[a.position[0]][a.position[1] + 1],
+                            grid[a.position[0] - 1][a.position[1] + 1],
+                        ];
+                    }
                 }
             }
         } catch (error) {}
@@ -669,12 +765,31 @@ const hasAdjNodes = (a, b) => {
                     !grid[a.position[0]][a.position[1] - 1].seen &&
                     !grid[a.position[0] - 1][a.position[1] - 1].seen
                 ) {
-                    grid[a.position[0]][a.position[1] - 1].seen = true;
-                    grid[a.position[0] - 1][a.position[1] - 1].seen = true;
-                    return [
-                        grid[a.position[0]][a.position[1] - 1],
-                        grid[a.position[0] - 1][a.position[1] - 1],
-                    ];
+                    let ret = true;
+                    for (let i = 1; i < snake.body.length; i++) {
+                        if (
+                            a.position[0] == snake.body[i][0] &&
+                            a.position[1] - 1 == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                        if (
+                            a.position[0] - 1 == snake.body[i][0] &&
+                            a.position[1] - 1 == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                    }
+                    if (ret) {
+                        grid[a.position[0]][a.position[1] - 1].seen = true;
+                        grid[a.position[0] - 1][a.position[1] - 1].seen = true;
+                        return [
+                            grid[a.position[0]][a.position[1] - 1],
+                            grid[a.position[0] - 1][a.position[1] - 1],
+                        ];
+                    }
                 }
             }
         } catch (error) {}
@@ -689,12 +804,31 @@ const hasAdjNodes = (a, b) => {
                     !grid[a.position[0]][a.position[1] + 1].seen &&
                     !grid[a.position[0] + 1][a.position[1] + 1].seen
                 ) {
-                    grid[a.position[0]][a.position[1] + 1].seen = true;
-                    grid[a.position[0] + 1][a.position[1] + 1].seen = true;
-                    return [
-                        grid[a.position[0]][a.position[1] + 1],
-                        grid[a.position[0] + 1][a.position[1] + 1],
-                    ];
+                    let ret = true;
+                    for (let i = 1; i < snake.body.length; i++) {
+                        if (
+                            a.position[0] == snake.body[i][0] &&
+                            a.position[1] + 1 == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                        if (
+                            a.position[0] + 1 == snake.body[i][0] &&
+                            a.position[1] + 1 == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                    }
+                    if (ret) {
+                        grid[a.position[0]][a.position[1] + 1].seen = true;
+                        grid[a.position[0] + 1][a.position[1] + 1].seen = true;
+                        return [
+                            grid[a.position[0]][a.position[1] + 1],
+                            grid[a.position[0] + 1][a.position[1] + 1],
+                        ];
+                    }
                 }
             }
         } catch (error) {}
@@ -707,29 +841,53 @@ const hasAdjNodes = (a, b) => {
                     !grid[a.position[0]][a.position[1] - 1].seen &&
                     !grid[a.position[0] + 1][a.position[1] - 1].seen
                 ) {
-                    grid[a.position[0]][a.position[1] - 1].seen = true;
-                    grid[a.position[0] + 1][a.position[1] - 1].seen = true;
-                    return [
-                        grid[a.position[0]][a.position[1] - 1],
-                        grid[a.position[0] + 1][a.position[1] - 1],
-                    ];
+                    let ret = true;
+                    for (let i = 1; i < snake.body.length; i++) {
+                        if (
+                            a.position[0] == snake.body[i][0] &&
+                            a.position[1] - 1 == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                        if (
+                            a.position[0] + 1 == snake.body[i][0] &&
+                            a.position[1] - 1 == snake.body[i][1]
+                        ) {
+                            ret = false;
+                            break;
+                        }
+                    }
+                    if (ret) {
+                        grid[a.position[0]][a.position[1] - 1].seen = true;
+                        grid[a.position[0] + 1][a.position[1] - 1].seen = true;
+                        return [
+                            grid[a.position[0]][a.position[1] - 1],
+                            grid[a.position[0] + 1][a.position[1] - 1],
+                        ];
+                    }
                 }
             }
         } catch (error) {}
     }
     return null;
 };
+let sPaATH;
 async function hamiltonian(head, tail) {
     let HEAD = nodeAt(head);
     let TAIL = nodeAt(tail);
-    console.log(TAIL);
+
+    HEAD.seen = true;
+    TAIL.seen = true;
+    //console.log(TAIL);
     let a;
     astarH(TAIL.position);
-    console.log(TAIL);
+    shortestPath.reverse();
+    //console.log(TAIL);
     currAlgo = searchAlgo.HAMILTONIAN;
     PATH = [];
     //console.log(shortestPath);
-
+    sPaAth = [...shortestPath];
     let index = 1;
     while (index < shortestPath.length) {
         let adjNodes = hasAdjNodes(
@@ -742,7 +900,12 @@ async function hamiltonian(head, tail) {
         }
         index++;
     }
-    shortestPath.unshift(TAIL);
+    for(let i = 1; i < snake.body.length; i ++){
+        shortestPath.unshift(nodeAt(snake.body[i]));
+    }
+    console.log(shortestPath);
+    //console.log(HEAD);
+    //console.log(TAIL);
     for (let i = 1; i < shortestPath.length; i++) {
         PATH.push(findDirection(shortestPath[i - 1], shortestPath[i]));
     }
